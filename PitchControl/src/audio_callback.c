@@ -51,14 +51,14 @@ float evaluate_audio(float *data, appdata_s *ad) {
 	// GetMax
 	float maxval = 0;
 	int maxidx = 0;
-	for (int i = 40; i < BUFFSIZE; i += 2) {
-		float val = absquad(data + i) / (i + 100);
+	for (int i = 80; i < BUFFSIZE; i += 2) {
+		float val = absquad(data + i);
 		if (val > maxval) {
 			maxval = val;
 			maxidx = i / 2;
 		}
 	}
-	if (maxval * maxidx > 1.e10) {
+	if (maxval * maxidx > 2.e12) {
 		// Aufgrund der Werte der Nachbarpunkte und einer quadratischen Interpolation
 		// versuchen wir die Frequenz noch genauer abzuschätzen.
 		float ym = sqrt(absquad(data + maxidx - 1));
@@ -66,6 +66,14 @@ float evaluate_audio(float *data, appdata_s *ad) {
 		float yp = sqrt(absquad(data + maxidx + 1));
 		float corr = (ym - yp) / (2. * ym - 4. * y0 + 2. * yp);
 		float freq = ((float) maxidx + corr) * SAMPLE_RATE / BUFFSIZE;
+		// Wir prüfen, ob der Maximalwert ein starker Oberton eines Grundtons sein könnte.
+		if (absquad(data + maxidx) / maxval > 0.3) {
+			// Hauptfrequent ist vermutlich der erste Oberton.
+			freq *= 0.5;
+		} else if (absquad(data + maxidx * 2 / 3) / maxval > 0.3) {
+			// Hauptfrequent ist vermutlich der zweite Oberton.
+			freq /= 3.;
+		}
 		return freq;
 	} else {
 		return 0.f;
@@ -111,6 +119,7 @@ void activateAudio(void *data, Ecore_Thread *thread) {
 	void *buff = malloc(buffbytes);
 
 	while (!ecore_thread_check(thread)) {
+		dlog_print(DLOG_DEBUG, LOG_TAG, "Going to read");
 		int read = audio_in_read(ad->input, buff, buffbytes);
 		dlog_print(DLOG_DEBUG, LOG_TAG, "Read %lu audio bytes", read);
 		if (read > 0) {
@@ -118,9 +127,11 @@ void activateAudio(void *data, Ecore_Thread *thread) {
 		} else if (read < 0) {
 			dlog_print(DLOG_ERROR, LOG_TAG, "Error reading Audio", read);
 		}
+		dlog_print(DLOG_DEBUG, LOG_TAG, "Processing end");
 	}
 
 	audio_in_unprepare(ad->input);
+	dlog_print(DLOG_INFO, LOG_TAG, "Audio Record Inactivated");
 	free(buff);
 }
 
