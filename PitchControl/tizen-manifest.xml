@@ -3,12 +3,12 @@
     <description>Determines the frequency and pitch value of the predominant sound.</description>
     <profile name="wearable"/>
     <ui-application appid="priv.sper.pitchcontrol" exec="pitchcontrol" multiple="false" nodisplay="false" taskmanage="true" type="capp">
-        <label>Pitch Control</label>
+        <label>pitchcontrol</label>
         <icon>pitchcontrol.png</icon>
     </ui-application>
     <privileges>
         <privilege>http://developer.samsung.com/tizen/privilege/accessoryprotocol</privilege>
         <privilege>http://tizen.org/privilege/recorder</privilege>
     </privileges>
-    <feature name="http://tizen.org/feature/screen.size.normal">true</feature>
+    <feature name="http://tizen.org/feature/screen.shape.circle">true</feature>
 </manifest>
