@@ -23,7 +23,7 @@ char **noteName, **octName;
  * Berechnet die Anzahl Halbtöne, die der gesuchte Ton vom Kammerton entfernt ist und zählt vier Oktaven dazu.
  */
 static double calculateHalfTones(float freq) {
-	return 12. / M_LN2 * (log(freq) - log(440.)) + 48.5;
+	return 12. / M_LN2 * (log(freq) - log(refPitch)) + 48.5;
 }
 
 const static char *accidental[] = {

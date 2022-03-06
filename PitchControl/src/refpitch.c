@@ -8,7 +8,7 @@
 #include "audio_callback.h"
 
 static Evas_Object *refRect, *titleText, *refText;
-static int refPitch = 440;
+int refPitch = 440;
 static short refIsShown = 0;
 static time_t mytime;
 
@@ -51,10 +51,22 @@ short hideRef() {
 
 static Eina_Bool rotary_cb(void *user_data, Evas_Object *obj, Eext_Rotary_Event_Info *rotary_info)
 {
-	appdata_s *data = user_data;
+	appdata_s *ad = user_data;
 	dlog_print(DLOG_DEBUG, LOG_TAG, "Detent detected, obj[%p], direction[%d]", obj, rotary_info->direction);
 	mytime = time(NULL);
-	showRef();
+	if (refIsShown) {
+		if (rotary_info->direction == EEXT_ROTARY_DIRECTION_CLOCKWISE) {
+			if (refPitch < 470)
+				refPitch++;
+		} else {
+			if (refPitch > 410)
+				refPitch--;
+		}
+		char disp[8];
+		sprintf(disp, "%d Hz", refPitch);
+		evas_object_text_text_set(refText, disp);
+	} else
+		showRef();
 	return ECORE_CALLBACK_RENEW;
 }
 

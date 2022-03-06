@@ -7,4 +7,6 @@ short hideRef();
 
 void register_rotary_callback(appdata_s *data);
 
+extern int refPitch;
+
 #endif /* REFPITCH_H_ */

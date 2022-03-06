@@ -21,13 +21,13 @@
 						<toolChain id="org.tizen.nativecore.toolchain.sbi.gcc45.app.debug.491616808" name="Tizen Native Toolchain" superClass="org.tizen.nativecore.toolchain.sbi.gcc45.app.debug">
 							<targetPlatform id="org.tizen.nativeide.target.sbi.gnu.platform.base.9513154" osList="linux,win32" superClass="org.tizen.nativeide.target.sbi.gnu.platform.base"/>
 							<builder autoBuildTarget="all" buildPath="${workspace_loc:/PitchControl}/Debug" cleanBuildTarget="clean" enableAutoBuild="false" enableCleanBuild="true" enabledIncrementalBuild="true" id="org.tizen.nativecore.target.sbi.gnu.builder.31912598" incrementalBuildTarget="all" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="Tizen Application Builder" parallelBuildOn="false" superClass="org.tizen.nativecore.target.sbi.gnu.builder"/>
-							<tool command="i586-linux-gnueabi-ar" id="org.tizen.nativecore.tool.sbi.gnu.archiver.543221555" name="Archiver" superClass="org.tizen.nativecore.tool.sbi.gnu.archiver"/>
+							<tool command="arm-linux-gnueabi-ar" id="org.tizen.nativecore.tool.sbi.gnu.archiver.543221555" name="Archiver" superClass="org.tizen.nativecore.tool.sbi.gnu.archiver"/>
 							<tool command="clang++" id="org.tizen.nativecore.tool.sbi.gnu.cpp.compiler.380036450" name="C++ Compiler" superClass="org.tizen.nativecore.tool.sbi.gnu.cpp.compiler">
 								<option id="gnu.cpp.compiler.option.optimization.level.1627548426" name="Optimization Level" superClass="gnu.cpp.compiler.option.optimization.level" useByScannerDiscovery="false" value="gnu.cpp.compiler.optimization.level.more" valueType="enumerated"/>
 								<option defaultValue="gnu.cpp.compiler.debugging.level.max" id="sbi.gnu.cpp.compiler.option.debugging.level.core.1442691792" name="Debug level" superClass="sbi.gnu.cpp.compiler.option.debugging.level.core" useByScannerDiscovery="false" valueType="enumerated"/>
 								<option defaultValue="false" id="sbi.gnu.cpp.compiler.option.misc.pic.core.1698382989" superClass="sbi.gnu.cpp.compiler.option.misc.pic.core" useByScannerDiscovery="false" valueType="boolean"/>
 								<option id="sbi.gnu.cpp.compiler.option.1368430785" superClass="sbi.gnu.cpp.compiler.option" useByScannerDiscovery="false" valueType="userObjs">
-									<listOptionValue builtIn="false" value="wearable-5.5-emulator.core_llvm40.i386"/>
+									<listOptionValue builtIn="false" value="wearable-5.5-device.core_llvm40.armel"/>
 								</option>
 								<option id="sbi.gnu.cpp.compiler.option.frameworks.core.291507144" superClass="sbi.gnu.cpp.compiler.option.frameworks.core" useByScannerDiscovery="false" valueType="userObjs">
 									<listOptionValue builtIn="false" value="Native_API"/>
@@ -133,12 +133,12 @@
 									<listOptionValue builtIn="false" value="${RS_COMPILER_MISC}"/>
 									<listOptionValue builtIn="false" value=" -fPIE"/>
 									<listOptionValue builtIn="false" value="--sysroot=&quot;${SBI_SYSROOT}&quot;"/>
+									<listOptionValue builtIn="false" value="-mthumb"/>
 									<listOptionValue builtIn="false" value="--param=ssp-buffer-size=4"/>
-									<listOptionValue builtIn="false" value="-fasynchronous-unwind-tables"/>
-									<listOptionValue builtIn="false" value="-fno-omit-frame-pointer"/>
-									<listOptionValue builtIn="false" value="-msse4.2"/>
-									<listOptionValue builtIn="false" value="-m32"/>
-									<listOptionValue builtIn="false" value="-mfpmath=sse"/>
+									<listOptionValue builtIn="false" value="-mlittle-endian"/>
+									<listOptionValue builtIn="false" value="-mfloat-abi=softfp"/>
+									<listOptionValue builtIn="false" value="-Wl,--hash-style=gnu"/>
+									<listOptionValue builtIn="false" value="-Wp,-D__SOFTFP"/>
 								</option>
 								<option id="sbi.gnu.cpp.compiler.option.preprocessor.def.deprecation.302491890" superClass="sbi.gnu.cpp.compiler.option.preprocessor.def.deprecation" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="TIZEN_DEPRECATION"/>
@@ -155,7 +155,7 @@
 								<option defaultValue="gnu.c.debugging.level.max" id="sbi.gnu.c.compiler.option.debugging.level.core.24105877" name="Debug level" superClass="sbi.gnu.c.compiler.option.debugging.level.core" useByScannerDiscovery="false" valueType="enumerated"/>
 								<option defaultValue="false" id="sbi.gnu.c.compiler.option.misc.pic.core.324831007" superClass="sbi.gnu.c.compiler.option.misc.pic.core" useByScannerDiscovery="false" valueType="boolean"/>
 								<option id="sbi.gnu.c.compiler.option.21839387" superClass="sbi.gnu.c.compiler.option" useByScannerDiscovery="false" valueType="userObjs">
-									<listOptionValue builtIn="false" value="wearable-5.5-emulator.core_llvm40.i386"/>
+									<listOptionValue builtIn="false" value="wearable-5.5-device.core_llvm40.armel"/>
 								</option>
 								<option id="sbi.gnu.c.compiler.option.frameworks.core.533633924" superClass="sbi.gnu.c.compiler.option.frameworks.core" useByScannerDiscovery="false" valueType="userObjs">
 									<listOptionValue builtIn="false" value="Native_API"/>
@@ -261,12 +261,12 @@
 									<listOptionValue builtIn="false" value="${RS_COMPILER_MISC}"/>
 									<listOptionValue builtIn="false" value=" -fPIE"/>
 									<listOptionValue builtIn="false" value="--sysroot=&quot;${SBI_SYSROOT}&quot;"/>
+									<listOptionValue builtIn="false" value="-mthumb"/>
 									<listOptionValue builtIn="false" value="--param=ssp-buffer-size=4"/>
-									<listOptionValue builtIn="false" value="-fasynchronous-unwind-tables"/>
-									<listOptionValue builtIn="false" value="-fno-omit-frame-pointer"/>
-									<listOptionValue builtIn="false" value="-msse4.2"/>
-									<listOptionValue builtIn="false" value="-m32"/>
-									<listOptionValue builtIn="false" value="-mfpmath=sse"/>
+									<listOptionValue builtIn="false" value="-mlittle-endian"/>
+									<listOptionValue builtIn="false" value="-mfloat-abi=softfp"/>
+									<listOptionValue builtIn="false" value="-Wl,--hash-style=gnu"/>
+									<listOptionValue builtIn="false" value="-Wp,-D__SOFTFP"/>
 								</option>
 								<option id="sbi.gnu.c.compiler.option.preprocessor.def.symbols.deprecation.457340770" superClass="sbi.gnu.c.compiler.option.preprocessor.def.symbols.deprecation" useByScannerDiscovery="false" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="TIZEN_DEPRECATION"/>
