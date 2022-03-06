@@ -11,6 +11,8 @@
 #include <math.h>
 
 #include "fourier.h"
+#include "refpitch.h"
+
 #define BUFFSIZE 32768
 #define FOURTHBUFF 8192
 #define THREEFOUR 24576
@@ -92,14 +94,10 @@ void copyAudioData(const short *buffer, size_t nbytes, void *userdata) {
 			if (idx >= BUFFSIZE)  {
 				memcpy(data[1 - activebuf], data[activebuf] + FOURTHBUFF, THREEFOUR * sizeof(float));
 				evalbuf = data[activebuf];
+				float freq = evaluate_audio(evalbuf, ad);
+				ecore_thread_feedback(ad->thread, &freq);
 				activebuf = 1 - activebuf;
 				idx = THREEFOUR;
-			}
-		}
-		if (evalbuf != NULL) {
-			float freq = evaluate_audio(evalbuf, ad);
-			if (freq != ad->dispFreq) {
-				ecore_thread_feedback(ad->thread, &freq);
 			}
 		}
 	}
@@ -186,7 +184,12 @@ void displayNote(appdata_s *ad, float freq) {
 }
 
 void displayNoteCallback(void *data, Ecore_Thread *thread, void *msg_data) {
-	displayNote((appdata_s *)data, *(float *)msg_data);
+	if (hideRef())
+		return;
+	float freq = *(float *)msg_data;
+	appdata_s *ad = (appdata_s *)data;
+	if (freq != ad->dispFreq)
+		displayNote(ad, freq);
 }
 
 static void thread_end_cb(void *data, Ecore_Thread *thread)

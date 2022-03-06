@@ -1,6 +1,7 @@
 #include "pitchcontrol.h"
 #include "app_activate.h"
 #include "audio_callback.h"
+#include "refpitch.h"
 
 static void
 win_delete_request_cb(void *data, Evas_Object *obj, void *event_info)
@@ -82,6 +83,7 @@ create_base_gui(appdata_s *ad)
 	evas_object_color_set(ad->freq, 0, 128, 128, 255);
 	evas_object_move(ad->freq, centerX - 45, centerY + 60);
 	evas_object_show(ad->freq);
+	register_rotary_callback(ad);
 }
 
 static bool
