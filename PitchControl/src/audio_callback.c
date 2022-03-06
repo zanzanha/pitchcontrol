@@ -66,9 +66,6 @@ void displayNote(float freq, appdata_s *ad) {
 		int octaveidx = (fht - 3) / 12;
 		int noteidx = fht % 12;
 		sprintf(hertzstr, "%.1f Hz", freq);
-//		Evas_Object *hand = elm_object_part_content_get(layout, "hand_cent");
-//		view_rotate_hand(hand, 2., 180, 180);
-//		elm_object_part_content_set(layout, "hand_cent", hand);
 		evas_object_text_text_set(ad->freq, hertzstr);
 		evas_object_text_text_set(ad->note, note[noteidx]);
 		evas_object_text_text_set(ad->accidental, accidental[noteidx]);
@@ -94,16 +91,14 @@ void displayNote(float freq, appdata_s *ad) {
 	evas_object_map_enable_set(ad->hand, EINA_TRUE);
 	elm_win_render(ad->win);
 	elm_win_norender_pop(ad->win);
+	oldfreq = freq;
 }
 
-float data[BUFFSIZE];
-float *dataptr, *dataend;
-char working = 0;
-int nproc = 0;
+float data[2][BUFFSIZE];
+int nproc = 0, activebuf = 0, idx = 0;
 
 void reset_data() {
-	dataptr = data;
-	dataend = data + BUFFSIZE;
+	activebuf = idx = 0;
 }
 
 
@@ -111,7 +106,7 @@ float absquad(float *dptr) {
 	return dptr[0] * dptr[0] + dptr[1] * dptr[1];
 }
 
-void evaluate_audio(appdata_s *ad) {
+void evaluate_audio(float *data, appdata_s *ad) {
 	realft(data - 1, BUFFSIZE, 1);
 	// GetMax
 	float maxval = 0;
@@ -139,22 +134,22 @@ void evaluate_audio(appdata_s *ad) {
 
 void io_stream_callback(audio_in_h handle, size_t nbytes, void *userdata) {
 	const short *buffer;
+	char eval = 0;
 	if (nbytes > 0) {
 		audio_in_peek(handle, &buffer, &nbytes);
-		if (!working) {
-			short *buffend = ((char *)buffer) + nbytes;
-			while (dataptr < dataend && buffer < buffend) {
-				*dataptr++ = *buffer++;
+		short *buffend = ((char *)buffer) + nbytes;
+		while (buffer < buffend) {
+			data[activebuf][idx++] = *buffer++;
+			if (idx >= BUFFSIZE)  {
+				memcpy(data[1 - activebuf], data[activebuf] + BUFFSIZE / 2, BUFFSIZE / 2 * sizeof(float));
+				activebuf = 1 - activebuf;
+				idx = BUFFSIZE / 2;
+				eval = true;
 			}
-			audio_in_drop(handle);
-			if (dataptr >= dataend)  {
-				working = 1;
-				evaluate_audio((appdata_s *)userdata);
-				reset_data();
-				working = 0;
-			}
-		} else
-			audio_in_drop(handle);
+		}
+		audio_in_drop(handle);
+		if (eval)
+			evaluate_audio(data[activebuf], (appdata_s *)userdata);
 	}
 }
 
