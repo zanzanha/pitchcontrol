@@ -12,6 +12,8 @@
 
 #include "fourier.h"
 #define BUFFSIZE 32768
+#define FOURTHBUFF 8192
+#define THREEFOUR 24576
 
 char **noteName, **octName;
 
@@ -58,7 +60,7 @@ float evaluate_audio(float *data, appdata_s *ad) {
 			maxidx = i / 2;
 		}
 	}
-	if (maxval * maxidx > 2.e12) {
+	if (maxval * maxidx > 5.e11) {
 		// Aufgrund der Werte der Nachbarpunkte und einer quadratischen Interpolation
 		// versuchen wir die Frequenz noch genauer abzuschätzen.
 		float ym = sqrt(absquad(data + maxidx - 1));
@@ -88,10 +90,10 @@ void copyAudioData(const short *buffer, size_t nbytes, void *userdata) {
 		while (buffer < buffend) {
 			data[activebuf][idx++] = *buffer++;
 			if (idx >= BUFFSIZE)  {
-				memcpy(data[1 - activebuf], data[activebuf] + BUFFSIZE / 2, BUFFSIZE / 2 * sizeof(float));
+				memcpy(data[1 - activebuf], data[activebuf] + FOURTHBUFF, THREEFOUR * sizeof(float));
 				evalbuf = data[activebuf];
 				activebuf = 1 - activebuf;
-				idx = BUFFSIZE / 2;
+				idx = THREEFOUR;
 			}
 		}
 		if (evalbuf != NULL) {

@@ -1,7 +1,7 @@
 #ifndef __pitchcontrol_H__
 #define __pitchcontrol_H__
 
-#include <app.h>
+#include <appfw/app.h>
 #include <Elementary.h>
 #include <system_settings.h>
 #include <efl_extension.h>

@@ -64,7 +64,7 @@ create_base_gui(appdata_s *ad)
 	ad->hand = addImage(canvas, "images/zeiger.png", centerX - 11, 40, 21, 43);
 	ad->note = evas_object_text_add(canvas);
 	evas_object_text_text_set(ad->note, "");
-	evas_object_text_style_set(ad->note, EVAS_TEXT_STYLE_TIZEN_GLOW_SHADOW);
+	evas_object_text_style_set(ad->note, EVAS_TEXT_STYLE_GLOW | EVAS_TEXT_STYLE_SHADOW);
 	evas_object_color_set(ad->note, 0, 127, 255, 255);
 	evas_object_show(ad->note);
 	ad->accidental = evas_object_text_add(canvas);
