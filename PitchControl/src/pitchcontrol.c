@@ -26,8 +26,6 @@ app_get_resource(const char *edj_file_in, char *edj_path_out, int edj_path_max)
 	}
 }
 
-static Ecore_Timer *timer;
-
 static Evas_Object *addImage(Evas* canvas, char *imagepath, int xpos, int ypos, int width, int height) {
 	/* Image */
 	char edj_path[PATH_MAX] = { 0, };
@@ -103,31 +101,25 @@ app_create(void *data)
 static void
 app_control(app_control_h app_control, void *data)
 {
-	activateAudioModule((appdata_s *)data);
-//    /* register the timer */
-//    ecore_timer_add(0.2, cb_keepAlive, NULL);
+//	activateAudioModule((appdata_s *)data);
 }
 
 static void
 app_pause(void *data)
 {
 	deactivateAudioModule();
-	ecore_timer_del(timer);
 }
 
 static void
 app_resume(void *data)
 {
 	activateAudioModule((appdata_s *)data);
-//    /* register the timer */
-//    ecore_timer_add(0.2, cb_keepAlive, NULL);
 }
 
 static void
 app_terminate(void *data)
 {
 	deactivateAudioModule();
-	ecore_timer_del(timer);
 }
 
 static void
