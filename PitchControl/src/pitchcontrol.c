@@ -3,8 +3,8 @@
 #include "audio_callback.h"
 
 typedef struct appdata{
-	Evas_Object* win;
-	Evas_Coord width, height;
+	Evas_Object *win, *note, *accidental, *freq, *octave;
+	Evas_Map *rot;
 } appdata_s;
 
 static void
@@ -19,13 +19,6 @@ win_back_cb(void *data, Evas_Object *obj, void *event_info)
 	appdata_s *ad = data;
 	/* Let window go to hide state. */
 	elm_win_lower(ad->win);
-}
-
-static void
-win_resize_cb(void *data, Evas *e , Evas_Object *obj , void *event_info)
-{
-	appdata_s *ad = data;
-	evas_object_geometry_get(ad->win, NULL, NULL, &ad->width, &ad->height);
 }
 
 static void
@@ -45,15 +38,28 @@ static Eina_Bool cb_keepAlive(void *data)
 
 static Ecore_Timer *timer;
 
+static Evas_Object *addImage(Evas* canvas, char *imagepath, int xpos, int ypos, int width, int height) {
+	/* Image */
+	char edj_path[PATH_MAX] = { 0, };
+	Evas_Object *img = evas_object_image_filled_add(canvas);
+	app_get_resource(imagepath, edj_path, (int) PATH_MAX);
+	evas_object_image_file_set(img, edj_path, NULL);
+	evas_object_move(img, xpos, ypos);
+	evas_object_resize(img, width, height);
+	evas_object_show(img);
+	return img;
+}
 
 static void
 create_base_gui(appdata_s *ad)
 {
-	char edj_path[PATH_MAX] = {0, };
+	int winwidth, winheight, centerX, centerY;
 
 	/* Window */
 	ad->win = elm_win_util_standard_add(PACKAGE, PACKAGE);
-	evas_object_resize(ad->win, 360, 360);
+	elm_win_screen_size_get(ad->win, NULL, NULL, &winwidth, &winheight);
+	centerX = winwidth / 2;
+	centerY = winheight / 2;
 	elm_win_autodel_set(ad->win, EINA_TRUE);
 
 	if (elm_win_wm_rotation_supported_get(ad->win)) {
@@ -63,33 +69,47 @@ create_base_gui(appdata_s *ad)
 
 	evas_object_smart_callback_add(ad->win, "delete,request", win_delete_request_cb, NULL);
 	eext_object_event_callback_add(ad->win, EEXT_CALLBACK_BACK, win_back_cb, ad);
-	evas_object_event_callback_add(ad->win, EVAS_CALLBACK_RESIZE, win_resize_cb, ad);
 	evas_object_show(ad->win);
 
 	Evas *canvas = evas_object_evas_get(ad->win);
 	/* Image */
-	Evas_Object *img = evas_object_image_filled_add(canvas);
-	app_get_resource("images/centdial.png", edj_path, (int)PATH_MAX);
-	evas_object_image_file_set(img, edj_path, NULL);
-	evas_object_resize(img, 360, 360);
-	evas_object_show(img);
-	Evas_Object *hand = evas_object_image_filled_add(canvas);
-	app_get_resource("images/hand_cent.png", edj_path, (int)PATH_MAX);
-	evas_object_image_file_set(hand, edj_path, NULL);
-	evas_object_move(hand, 165, 10);
-	evas_object_resize(hand, 30, 340);
-	Evas_Map *rot = evas_map_new(4);
-	evas_map_util_points_populate_from_object(rot, hand);
-	evas_map_point_image_uv_set(rot, 0, 0., 0.);
-	evas_map_point_image_uv_set(rot, 1, 60., 0.);
-	evas_map_point_image_uv_set(rot, 2, 60., 720.);
-	evas_map_point_image_uv_set(rot, 3, 0., 720.);
-	evas_map_util_rotate(rot, 55, 180, 180);
-	evas_object_map_set(hand, rot);
+	addImage(canvas, "images/centdial.png", 0, 0, winwidth, winheight);
+	Evas_Object *hand = addImage(canvas, "images/hand_cent.png", centerX - 15, 10, 30, winheight - 20);
+	ad->rot = evas_map_new(4);
+	evas_map_util_points_populate_from_object(ad->rot, hand);
+	evas_map_point_image_uv_set(ad->rot, 0, 0., 0.);
+	evas_map_point_image_uv_set(ad->rot, 1, 60., 0.);
+	evas_map_point_image_uv_set(ad->rot, 2, 60., 720.);
+	evas_map_point_image_uv_set(ad->rot, 3, 0., 720.);
+	evas_map_util_rotate(ad->rot, 55, centerX, centerY);
+	evas_object_map_set(hand, ad->rot);
 	evas_object_map_enable_set(hand, EINA_TRUE);
 	evas_object_show(hand);
-
-	evas_object_geometry_get(ad->win, NULL, NULL, &ad->width, &ad->height);
+	ad->note = evas_object_text_add(canvas);
+	evas_object_text_font_set(ad->note, "TizenSans:style=bold", 140);
+	evas_object_text_text_set(ad->note, "A");
+	evas_object_text_style_set(ad->note, EVAS_TEXT_STYLE_TIZEN_GLOW_SHADOW);
+	evas_object_color_set(ad->note, 0, 127, 255, 255);
+	evas_object_move(ad->note, centerX - 45, centerY - 100);
+	evas_object_show(ad->note);
+	ad->accidental = evas_object_text_add(canvas);
+	evas_object_text_font_set(ad->accidental, "TizenSans:style=bold", 40);
+	evas_object_text_text_set(ad->accidental, "#");
+	evas_object_color_set(ad->accidental, 0, 220, 255, 255);
+	evas_object_move(ad->accidental, centerX + 28, centerY - 80);
+	evas_object_show(ad->accidental);
+	ad->octave = evas_object_text_add(canvas);
+	evas_object_text_font_set(ad->octave, "TizenSans:style=bold", 32);
+	evas_object_text_text_set(ad->octave, "sub'");
+	evas_object_color_set(ad->octave, 0, 220, 128, 255);
+	evas_object_move(ad->octave, centerX - 100, centerY - 16);
+	evas_object_show(ad->octave);
+	ad->freq = evas_object_text_add(canvas);
+	evas_object_text_font_set(ad->freq, "TizenSans:style=bold", 32);
+	evas_object_text_text_set(ad->freq, "440 Hz");
+	evas_object_color_set(ad->freq, 0, 128, 128, 255);
+	evas_object_move(ad->freq, centerX - 45, centerY + 45);
+	evas_object_show(ad->freq);
 }
 
 static bool
