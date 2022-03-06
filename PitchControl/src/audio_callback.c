@@ -73,21 +73,6 @@ void evaluate_audio(float *data, appdata_s *ad) {
 	}
 }
 
-Eina_Bool deactivateAudio(void *data) {
-	appdata_s *ad = (appdata_s *)data;
-	time_t now = time(0);
-	if (now - ad->pauseTime > 28) {
-		dlog_print(DLOG_INFO, LOG_TAG, "Audio Record Stop Requested");
-		int error_code;
-		error_code = audio_in_unprepare(ad->input);
-		if (error_code) {
-			dlog_print(DLOG_ERROR, LOG_TAG, "Fehler %d bei Deactivate!", error_code);
-		}
-		dlog_print(DLOG_INFO, LOG_TAG, "Audio Record Stop Executed");
-	}
-	return EINA_FALSE;
-}
-
 void io_stream_callback(audio_in_h handle, size_t nbytes, void *userdata) {
 	const short *buffer;
 	float *evalbuf = NULL;
@@ -123,10 +108,43 @@ void io_stream_callback(audio_in_h handle, size_t nbytes, void *userdata) {
  * @param[in] cx The rotation's center horizontal position
  * @param[in] cy The rotation's center vertical position
  */
+Eina_Bool deactivateAudio(void *data) {
+	appdata_s *ad = (appdata_s *)data;
+	time_t now = time(0);
+	if (now - ad->pauseTime > 28) {
+		dlog_print(DLOG_INFO, LOG_TAG, "Audio Record Stop Requested");
+		int error_code;
+		error_code = audio_in_unprepare(ad->input);
+		if (error_code) {
+			dlog_print(DLOG_ERROR, LOG_TAG, "Fehler %d bei Deactivate!", error_code);
+		}
+		error_code = audio_in_destroy(ad->input);
+		if (error_code) {
+			printError(ad, "Fehler audio_in_set_stream", error_code);
+			error_code = audio_in_destroy(ad->input);
+		}
+		dlog_print(DLOG_INFO, LOG_TAG, "Audio Record Stop Executed");
+	}
+	return EINA_FALSE;
+}
+
 void activateAudio(appdata_s *ad) {
 	waitCount = 0;
 	dlog_print(DLOG_INFO, LOG_TAG, "Audio Record Start Requested");
 	audio_io_error_e error_code;
+
+	error_code = audio_in_create(SAMPLE_RATE, AUDIO_CHANNEL_MONO,
+			AUDIO_SAMPLE_TYPE_S16_LE, &ad->input);
+	if (error_code) {
+		printError(ad, "Fehler audio_in_create", error_code);
+		return;
+	}
+	error_code = audio_in_set_stream_cb(ad->input, io_stream_callback, ad);
+	if (error_code) {
+		printError(ad, "Fehler audio_in_set_stream", error_code);
+		error_code = audio_in_destroy(ad->input);
+		return;
+	}
 
 	reset_data();
 	error_code = audio_in_prepare(ad->input);

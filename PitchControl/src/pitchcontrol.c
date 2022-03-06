@@ -101,20 +101,6 @@ app_create(void *data)
 	// Initialize the audio input device
 	// Initialize the audio input device
 
-	audio_io_error_e error_code;
-	error_code = audio_in_create(SAMPLE_RATE, AUDIO_CHANNEL_MONO,
-			AUDIO_SAMPLE_TYPE_S16_LE, &ad->input);
-	if (error_code) {
-		printError(ad, "Fehler audio_in_create", error_code);
-		return false;
-	}
-	error_code = audio_in_set_stream_cb(ad->input, io_stream_callback, ad);
-	if (error_code) {
-		printError(ad, "Fehler audio_in_set_stream", error_code);
-		error_code = audio_in_destroy(ad->input);
-		return false;
-	}
-
 	return true;
 }
 
