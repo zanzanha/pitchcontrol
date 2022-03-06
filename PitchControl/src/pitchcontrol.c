@@ -97,6 +97,13 @@ app_create(void *data)
 	ad->dispFreq = -1.f;
 	// Initialize the audio input device
 	// Initialize the audio input device
+	audio_io_error_e error_code;
+	error_code = audio_in_create(SAMPLE_RATE, AUDIO_CHANNEL_MONO,
+			AUDIO_SAMPLE_TYPE_S16_LE, &ad->input);
+	if (error_code) {
+		printError(ad, "Fehler audio_in_create", error_code);
+		return false;
+	}
 
 	return true;
 }
@@ -104,7 +111,6 @@ app_create(void *data)
 static void
 app_control(app_control_h app_control, void *data)
 {
-	activateApp((appdata_s *)data);
 }
 
 static void
@@ -122,7 +128,6 @@ app_resume(void *data)
 static void
 app_terminate(void *data)
 {
-	deactivateApp((appdata_s *)data);
 }
 
 static void

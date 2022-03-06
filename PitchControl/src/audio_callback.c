@@ -100,20 +100,6 @@ void activateAudio(void *data, Ecore_Thread *thread) {
 	appdata_s *ad = data;
 	dlog_print(DLOG_INFO, LOG_TAG, "Audio Record Start Requested");
 	audio_io_error_e error_code;
-
-	error_code = audio_in_create(SAMPLE_RATE, AUDIO_CHANNEL_MONO,
-			AUDIO_SAMPLE_TYPE_S16_LE, &ad->input);
-	if (error_code) {
-		printError(ad, "Fehler audio_in_create", error_code);
-		return;
-	}
-	error_code = audio_in_set_stream_cb(ad->input, copyAudioData, ad);
-	if (error_code) {
-		printError(ad, "Fehler audio_in_set_stream", error_code);
-		error_code = audio_in_destroy(ad->input);
-		return;
-	}
-
 	reset_data();
 	error_code = audio_in_prepare(ad->input);
 	if (error_code) {
@@ -126,13 +112,15 @@ void activateAudio(void *data, Ecore_Thread *thread) {
 
 	while (!ecore_thread_check(thread)) {
 		int read = audio_in_read(ad->input, buff, buffbytes);
+		dlog_print(DLOG_DEBUG, LOG_TAG, "Read %lu audio bytes", read);
 		if (read > 0) {
 			copyAudioData(buff, read, ad);
+		} else if (read < 0) {
+			dlog_print(DLOG_ERROR, LOG_TAG, "Error reading Audio", read);
 		}
 	}
 
 	audio_in_unprepare(ad->input);
-	audio_in_destroy(ad->input);
 	free(buff);
 }
 
