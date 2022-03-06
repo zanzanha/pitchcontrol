@@ -1,5 +1,5 @@
 #include "pitchcontrol.h"
-#include "audio_read.h"
+#include "app_activate.h"
 #include "audio_callback.h"
 
 static void
@@ -82,20 +82,6 @@ create_base_gui(appdata_s *ad)
 	evas_object_color_set(ad->freq, 0, 128, 128, 255);
 	evas_object_move(ad->freq, centerX - 45, centerY + 60);
 	evas_object_show(ad->freq);
-	audio_io_error_e error_code;
-
-	error_code = audio_in_create(SAMPLE_RATE, AUDIO_CHANNEL_MONO,
-			AUDIO_SAMPLE_TYPE_S16_LE, &ad->input);
-	if (error_code) {
-		printError(ad, "Fehler audio_in_create", error_code);
-		return;
-	}
-	error_code = audio_in_set_stream_cb(ad->input, io_stream_callback, ad);
-	if (error_code) {
-		printError(ad, "Fehler audio_in_set_stream", error_code);
-		error_code = audio_in_destroy(ad->input);
-		return;
-	}
 }
 
 static bool
@@ -112,6 +98,7 @@ app_create(void *data)
 	ad->newFreq = 0.f;
 	ad->timer = ecore_timer_add(0.1, displayNote, data);
 	ad->isActive = 0;
+	ad->audioActive = 0;
 	// Initialize the audio input device
 
 	return true;
@@ -120,25 +107,25 @@ app_create(void *data)
 static void
 app_control(app_control_h app_control, void *data)
 {
-	activateAudioModule((appdata_s *)data);
+	activateApp((appdata_s *)data);
 }
 
 static void
 app_pause(void *data)
 {
-	deactivateAudioModule((appdata_s *)data);
+	deactivateApp((appdata_s *)data);
 }
 
 static void
 app_resume(void *data)
 {
-	activateAudioModule((appdata_s *)data);
+	activateApp((appdata_s *)data);
 }
 
 static void
 app_terminate(void *data)
 {
-	deactivateAudioModule((appdata_s *)data);
+	deactivateApp((appdata_s *)data);
 }
 
 static void

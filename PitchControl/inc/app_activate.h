@@ -9,8 +9,7 @@
 #define AUDIO_READ_H_
 #include <Elementary.h>
 #include "audio_callback.h"
-void printError(appdata_s *ad, char *msg, int code);
-void activateAudioModule(appdata_s *ad);
-void deactivateAudioModule(appdata_s *ad);
+void activateApp(appdata_s *ad);
+void deactivateApp(appdata_s *ad);
 
 #endif /* AUDIO_READ_H_ */

@@ -23,12 +23,10 @@ extern char language[3];
 
 void reset_data();
 
-void io_stream_callback(audio_in_h handle, size_t nbytes, void *userdata);
-
 typedef struct appdata{
 	Evas_Object *win, *note, *accidental, *freq, *octave, *hand;
 	Evas *canvas;
-	char isActive;
+	char isActive, audioActive;
 	int centerX, centerY;
 	Ecore_Timer *timer;
 	float dispFreq, newFreq;
@@ -36,5 +34,8 @@ typedef struct appdata{
 } appdata_s;
 
 Eina_Bool displayNote(void *ad);
+void activateAudio(appdata_s *ad);
+void deactivateAudio(appdata_s *ad);
+void printError(appdata_s *ad, char *msg, int code);
 
 #endif /* AUDIO_CALLBACK_H_ */

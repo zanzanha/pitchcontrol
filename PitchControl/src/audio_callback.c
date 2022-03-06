@@ -27,6 +27,13 @@ const static char *accidental[] = {
 };
 
 char language[3];
+
+void printError(appdata_s *ad, char *msg, int code) {
+	char txt[80];
+	sprintf(txt, "%s: %d", msg, code);
+	evas_object_text_text_set(ad->freq, txt);
+}
+
 /*
  * @brief Rotate hands of the watch
  * @param[in] hand The hand you want to rotate
@@ -132,6 +139,7 @@ void io_stream_callback(audio_in_h handle, size_t nbytes, void *userdata) {
 	appdata_s *ad = (appdata_s *)userdata;
 //    dlog_print(DLOG_DEBUG, LOG_TAG, "Peeking %d bytes", nbytes);
 	if (nbytes > 0) {
+		audio_in_peek(handle, &buffer, &nbytes);
 		short *buffend = ((char *)buffer) + nbytes;
 		while (buffer < buffend) {
 			data[activebuf][idx++] = *buffer++;
@@ -148,3 +156,53 @@ void io_stream_callback(audio_in_h handle, size_t nbytes, void *userdata) {
 	}
 }
 
+void activateAudio(appdata_s *ad) {
+	if (ad->audioActive) {
+		dlog_print(DLOG_INFO, LOG_TAG, "Audio Module is already active");
+		return;
+	}
+	dlog_print(DLOG_INFO, LOG_TAG, "Audio Record Start Requested");
+	audio_io_error_e error_code;
+
+	// Initialize the audio input device
+
+	error_code = audio_in_create(SAMPLE_RATE, AUDIO_CHANNEL_MONO,
+			AUDIO_SAMPLE_TYPE_S16_LE, &ad->input);
+	if (error_code) {
+		printError(ad, "Fehler audio_in_create", error_code);
+		return;
+	}
+	error_code = audio_in_set_stream_cb(ad->input, io_stream_callback, ad);
+	if (error_code) {
+		printError(ad, "Fehler audio_in_set_stream", error_code);
+		error_code = audio_in_destroy(ad->input);
+		return;
+	}
+	reset_data();
+	error_code = audio_in_prepare(ad->input);
+	if (error_code) {
+		printError(ad, "Fehler audio_in_prepare", error_code);
+		error_code = audio_in_destroy(ad->input);
+		return;
+	}
+	ad->audioActive = 1;
+}
+
+void deactivateAudio(appdata_s *ad) {
+	if (!ad->audioActive) {
+		dlog_print(DLOG_INFO, LOG_TAG, "Audio Module is already inactive");
+		return;
+	}
+	dlog_print(DLOG_INFO, LOG_TAG, "Audio Record Stop Requested");
+	int error_code;
+	error_code = audio_in_unprepare(ad->input);
+	if (error_code) {
+		dlog_print(DLOG_ERROR, LOG_TAG, "Fehler %d bei Deactivate!", error_code);
+	}
+	error_code = audio_in_destroy(ad->input);
+	if (error_code) {
+		dlog_print(DLOG_ERROR, LOG_TAG, "Fehler %d bei destroy!", error_code);
+	}
+	ad->audioActive = 0;
+	dlog_print(DLOG_INFO, LOG_TAG, "Audio Record Stop Executed");
+}
