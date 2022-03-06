@@ -74,22 +74,22 @@ create_base_gui(appdata_s *ad)
 	evas_object_text_text_set(ad->note, "-");
 	evas_object_text_style_set(ad->note, EVAS_TEXT_STYLE_TIZEN_GLOW_SHADOW);
 	evas_object_color_set(ad->note, 0, 127, 255, 255);
-	evas_object_move(ad->note, centerX - 45, centerY - 100);
+	evas_object_move(ad->note, centerX - 32, centerY - 100);
 	evas_object_show(ad->note);
 	ad->accidental = evas_object_text_add(canvas);
 	evas_object_text_font_set(ad->accidental, "TizenSans:style=bold", 40);
 	evas_object_color_set(ad->accidental, 0, 220, 255, 255);
-	evas_object_move(ad->accidental, centerX + 28, centerY - 80);
+	evas_object_move(ad->accidental, centerX + 40, centerY - 75);
 	evas_object_show(ad->accidental);
 	ad->octave = evas_object_text_add(canvas);
 	evas_object_text_font_set(ad->octave, "TizenSans:style=bold", 32);
 	evas_object_color_set(ad->octave, 0, 220, 128, 255);
-	evas_object_move(ad->octave, centerX - 100, centerY - 16);
+	evas_object_move(ad->octave, centerX - 120, centerY - 16);
 	evas_object_show(ad->octave);
 	ad->freq = evas_object_text_add(canvas);
 	evas_object_text_font_set(ad->freq, "TizenSans:style=bold", 32);
 	evas_object_color_set(ad->freq, 0, 128, 128, 255);
-	evas_object_move(ad->freq, centerX - 45, centerY + 45);
+	evas_object_move(ad->freq, centerX - 45, centerY + 60);
 	evas_object_show(ad->freq);
 }
 

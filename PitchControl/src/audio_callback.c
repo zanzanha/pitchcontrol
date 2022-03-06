@@ -68,6 +68,7 @@ void displayNote(float freq, appdata_s *ad) {
 		sprintf(hertzstr, "%.1f Hz", freq);
 		evas_object_text_text_set(ad->freq, hertzstr);
 		evas_object_text_text_set(ad->note, note[noteidx]);
+		evas_object_move(ad->note, ad->centerX - 45, ad->centerY - 100);
 		evas_object_text_text_set(ad->accidental, accidental[noteidx]);
 		if (octaveidx < MAXOCTAVE)
 			evas_object_text_text_set(ad->octave, octave[octaveidx]);
@@ -77,6 +78,7 @@ void displayNote(float freq, appdata_s *ad) {
 	} else {
 		evas_object_text_text_set(ad->freq, "");
 		evas_object_text_text_set(ad->note, "-");
+		evas_object_move(ad->note, ad->centerX - 32, ad->centerY - 100);
 		evas_object_text_text_set(ad->accidental, "");
 		evas_object_text_text_set(ad->octave, "");
 	}
