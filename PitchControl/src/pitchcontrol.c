@@ -67,8 +67,8 @@ create_base_gui(appdata_s *ad)
 
 	Evas *canvas = ad->canvas = evas_object_evas_get(ad->win);
 	/* Image */
-	addImage(canvas, "images/centdial.png", 0, 0, winwidth, winheight);
-	ad->hand = addImage(canvas, "images/hand_cent.png", centerX - 15, 10, 30, winheight - 20);
+	addImage(canvas, "images/zifferblatt.png", 0, 0, winwidth, winheight);
+	ad->hand = addImage(canvas, "images/zeiger.png", centerX - 11, 40, 21, 43);
 	ad->note = evas_object_text_add(canvas);
 	evas_object_text_font_set(ad->note, "TizenSans:style=bold", 140);
 	evas_object_text_text_set(ad->note, "-");

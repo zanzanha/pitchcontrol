@@ -83,9 +83,9 @@ void displayNote(float freq, appdata_s *ad) {
 	Evas_Map *rot = evas_map_new(4);
 	evas_map_util_points_populate_from_object(rot, ad->hand);
 	evas_map_point_image_uv_set(rot, 0, 0., 0.);
-	evas_map_point_image_uv_set(rot, 1, 60., 0.);
-	evas_map_point_image_uv_set(rot, 2, 60., 720.);
-	evas_map_point_image_uv_set(rot, 3, 0., 720.);
+	evas_map_point_image_uv_set(rot, 1, 39., 0.);
+	evas_map_point_image_uv_set(rot, 2, 39., 88.);
+	evas_map_point_image_uv_set(rot, 3, 0., 88.);
 	evas_map_util_rotate(rot, deg, ad->centerX, ad->centerY);
 	evas_object_map_set(ad->hand, rot);
 	evas_object_map_enable_set(ad->hand, EINA_TRUE);
