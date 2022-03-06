@@ -8,6 +8,8 @@
 #include <audio_io.h>
 #include <stdio.h>
 #include <system_settings.h>
+#include <device/power.h>
+
 
 #include "audio_read.h"
 #include "audio_callback.h"
@@ -54,6 +56,7 @@ void activateAudioModule(appdata_s *ad) {
 
 	error_code = audio_in_create(SAMPLE_RATE, AUDIO_CHANNEL_MONO,
 			AUDIO_SAMPLE_TYPE_S16_LE, &input);
+	isActive = 1;
 	if (error_code) {
 		printError(ad, "Fehler audio_in_create", error_code);
 		return;
@@ -69,7 +72,7 @@ void activateAudioModule(appdata_s *ad) {
 		printError(ad, "Fehler audio_in_prepare", error_code);
 		return;
 	}
-	isActive = 1;
+	device_power_request_lock(POWER_LOCK_DISPLAY, 180000);
 	char *locale;
 	system_settings_get_value_string(SYSTEM_SETTINGS_KEY_LOCALE_LANGUAGE, &locale);
 	strncpy(language, locale, 2);
@@ -96,6 +99,7 @@ void deactivateAudioModule() {
 	if (!isActive)
 		return;
 	int error_code;
+	device_power_release_lock(POWER_LOCK_DISPLAY);
 	error_code = audio_in_unprepare(input);
 	error_code = audio_in_destroy(input);
 	isActive = 0;
