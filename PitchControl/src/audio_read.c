@@ -25,11 +25,11 @@ const static char *note[] = {
 };
 
 const static char *octave[MAXOCTAVE] = {
-		"ctr,,,", "ctr,,", "ctr,", "sm.", "sup'", "sup''", "sup'''", "sup''''"
+		"ctr,,", "ctr,", "gr.", "sm.", "sup'", "sup''", "sup'''", "sup''''"
 };
 
 const static char *octave_de[MAXOCTAVE] = {
-		"ktr,,,", "ktr,,", "kontra", "kl.", "sup'", "sup''", "sup'''", "sup''''"
+		"ktr,,", "kontra", "gr.", "kl.", "sup'", "sup''", "sup'''", "sup''''"
 };
 
 const static char *octave_lat[MAXOCTAVE] = {
