@@ -1,7 +1,11 @@
 #include "pitchcontrol.h"
-#include "app_activate.h"
+#include "audio_read.h"
 #include "audio_callback.h"
-#include "refpitch.h"
+
+typedef struct appdata{
+	Evas_Object* win;
+	Evas_Coord width, height;
+} appdata_s;
 
 static void
 win_delete_request_cb(void *data, Evas_Object *obj, void *event_info)
@@ -18,6 +22,13 @@ win_back_cb(void *data, Evas_Object *obj, void *event_info)
 }
 
 static void
+win_resize_cb(void *data, Evas *e , Evas_Object *obj , void *event_info)
+{
+	appdata_s *ad = data;
+	evas_object_geometry_get(ad->win, NULL, NULL, &ad->width, &ad->height);
+}
+
+static void
 app_get_resource(const char *edj_file_in, char *edj_path_out, int edj_path_max)
 {
 	char *res_path = app_get_resource_path();
@@ -27,27 +38,22 @@ app_get_resource(const char *edj_file_in, char *edj_path_out, int edj_path_max)
 	}
 }
 
-static Evas_Object *addImage(Evas* canvas, char *imagepath, int xpos, int ypos, int width, int height) {
-	/* Image */
-	char edj_path[PATH_MAX] = { 0, };
-	Evas_Object *img = evas_object_image_filled_add(canvas);
-	app_get_resource(imagepath, edj_path, (int) PATH_MAX);
-	evas_object_image_file_set(img, edj_path, NULL);
-	evas_object_move(img, xpos, ypos);
-	evas_object_resize(img, width, height);
-	evas_object_show(img);
-	return img;
+static Eina_Bool cb_keepAlive(void *data)
+{
+	return ECORE_CALLBACK_RENEW;
 }
+
+static Ecore_Timer *timer;
+
 
 static void
 create_base_gui(appdata_s *ad)
 {
-	int winwidth, winheight, centerX, centerY;
+	char edj_path[PATH_MAX] = {0, };
+
 	/* Window */
 	ad->win = elm_win_util_standard_add(PACKAGE, PACKAGE);
-	elm_win_screen_size_get(ad->win, NULL, NULL, &winwidth, &winheight);
-	ad->centerX = centerX = winwidth / 2;
-	ad->centerY = centerY = winheight / 2;
+	evas_object_resize(ad->win, 360, 360);
 	elm_win_autodel_set(ad->win, EINA_TRUE);
 
 	if (elm_win_wm_rotation_supported_get(ad->win)) {
@@ -57,33 +63,33 @@ create_base_gui(appdata_s *ad)
 
 	evas_object_smart_callback_add(ad->win, "delete,request", win_delete_request_cb, NULL);
 	eext_object_event_callback_add(ad->win, EEXT_CALLBACK_BACK, win_back_cb, ad);
+	evas_object_event_callback_add(ad->win, EVAS_CALLBACK_RESIZE, win_resize_cb, ad);
 	evas_object_show(ad->win);
 
-	Evas *canvas = ad->canvas = evas_object_evas_get(ad->win);
+	Evas *canvas = evas_object_evas_get(ad->win);
 	/* Image */
-	addImage(canvas, "images/zifferblatt.png", 0, 0, winwidth, winheight);
-	ad->hand = addImage(canvas, "images/zeiger.png", centerX - 11, 40, 21, 43);
-	ad->note = evas_object_text_add(canvas);
-	evas_object_text_text_set(ad->note, "");
-	evas_object_text_style_set(ad->note, EVAS_TEXT_STYLE_GLOW | EVAS_TEXT_STYLE_SHADOW);
-	evas_object_color_set(ad->note, 0, 127, 255, 255);
-	evas_object_show(ad->note);
-	ad->accidental = evas_object_text_add(canvas);
-	evas_object_text_font_set(ad->accidental, "TizenSans:style=bold", 40);
-	evas_object_color_set(ad->accidental, 0, 220, 255, 255);
-	evas_object_move(ad->accidental, centerX + 40, centerY - 75);
-	evas_object_show(ad->accidental);
-	ad->octave = evas_object_text_add(canvas);
-	evas_object_text_font_set(ad->octave, "TizenSans:style=bold", 32);
-	evas_object_color_set(ad->octave, 0, 220, 128, 255);
-	evas_object_move(ad->octave, centerX - 120, centerY - 16);
-	evas_object_show(ad->octave);
-	ad->freq = evas_object_text_add(canvas);
-	evas_object_text_font_set(ad->freq, "TizenSans:style=bold", 32);
-	evas_object_color_set(ad->freq, 0, 128, 128, 255);
-	evas_object_move(ad->freq, centerX - 45, centerY + 60);
-	evas_object_show(ad->freq);
-	register_rotary_callback(ad);
+	Evas_Object *img = evas_object_image_filled_add(canvas);
+	app_get_resource("images/centdial.png", edj_path, (int)PATH_MAX);
+	evas_object_image_file_set(img, edj_path, NULL);
+	evas_object_resize(img, 360, 360);
+	evas_object_show(img);
+	Evas_Object *hand = evas_object_image_filled_add(canvas);
+	app_get_resource("images/hand_cent.png", edj_path, (int)PATH_MAX);
+	evas_object_image_file_set(hand, edj_path, NULL);
+	evas_object_move(hand, 165, 10);
+	evas_object_resize(hand, 30, 340);
+	Evas_Map *rot = evas_map_new(4);
+	evas_map_util_points_populate_from_object(rot, hand);
+	evas_map_point_image_uv_set(rot, 0, 0., 0.);
+	evas_map_point_image_uv_set(rot, 1, 60., 0.);
+	evas_map_point_image_uv_set(rot, 2, 60., 720.);
+	evas_map_point_image_uv_set(rot, 3, 0., 720.);
+	evas_map_util_rotate(rot, 55, 180, 180);
+	evas_object_map_set(hand, rot);
+	evas_object_map_enable_set(hand, EINA_TRUE);
+	evas_object_show(hand);
+
+	evas_object_geometry_get(ad->win, NULL, NULL, &ad->width, &ad->height);
 }
 
 static bool
@@ -96,16 +102,6 @@ app_create(void *data)
 	appdata_s *ad = data;
 
 	create_base_gui(ad);
-	ad->dispFreq = -1.f;
-	// Initialize the audio input device
-	// Initialize the audio input device
-	audio_io_error_e error_code;
-	error_code = audio_in_create(SAMPLE_RATE, AUDIO_CHANNEL_MONO,
-			AUDIO_SAMPLE_TYPE_S16_LE, &ad->input);
-	if (error_code) {
-		printError(ad, "Fehler audio_in_create", error_code);
-		return false;
-	}
 
 	return true;
 }
@@ -113,23 +109,31 @@ app_create(void *data)
 static void
 app_control(app_control_h app_control, void *data)
 {
+//	activateAudioModule();
+//    /* register the timer */
+//    ecore_timer_add(0.2, cb_keepAlive, NULL);
 }
 
 static void
 app_pause(void *data)
 {
-	deactivateApp((appdata_s *)data);
+	deactivateAudioModule();
+	ecore_timer_del(timer);
 }
 
 static void
 app_resume(void *data)
 {
-	activateApp((appdata_s *)data);
+//	activateAudioModule();
+//    /* register the timer */
+//    ecore_timer_add(0.2, cb_keepAlive, NULL);
 }
 
 static void
 app_terminate(void *data)
 {
+	deactivateAudioModule();
+	ecore_timer_del(timer);
 }
 
 static void

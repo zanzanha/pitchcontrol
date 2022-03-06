@@ -1,13 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<manifest xmlns="http://tizen.org/ns/packages" api-version="2.3.2" package="priv.sper.pitchcontrol" version="1.1.0">
-    <author>Silvan Perego</author>
-    <description>Pitch Control uses the internal microphone to register surrounding sounds. It determines the dominating frequency and calculated note pitch and the deviation from standard 440 Hz tuning.
-
-It can be used as a tuner for musical instruments or for controlling the intonation while singing or playing a music instrument.
-
-Pitch control uses GEARS internal capabilities and does not need a live connection to the smart phone.
-
-New in Release 1.0.1: Upon user request, "Pitch Control" will keep the watch alive for 3 minutes unless the user presses the home or return button.</description>
+<manifest xmlns="http://tizen.org/ns/packages" api-version="2.3.1" package="priv.sper.pitchcontrol" version="1.0.0">
+    <description>Determines the frequency and pitch value of the predominant sound.</description>
     <profile name="wearable"/>
     <ui-application appid="priv.sper.pitchcontrol" exec="pitchcontrol" multiple="false" nodisplay="false" taskmanage="true" type="capp">
         <label>Pitch Control</label>
@@ -15,8 +8,7 @@ New in Release 1.0.1: Upon user request, "Pitch Control" will keep the watch ali
     </ui-application>
     <privileges>
         <privilege>http://developer.samsung.com/tizen/privilege/accessoryprotocol</privilege>
-        <privilege>http://tizen.org/privilege/display</privilege>
         <privilege>http://tizen.org/privilege/recorder</privilege>
     </privileges>
-    <feature name="http://tizen.org/feature/screen.shape.circle">true</feature>
+    <feature name="http://tizen.org/feature/screen.size.normal">true</feature>
 </manifest>

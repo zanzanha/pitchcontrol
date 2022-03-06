@@ -4,11 +4,4 @@
 author-signature.xml
 signature1.xml
 bin/pitchcontrol
-res/.DS_Store
-res/images/.DS_Store
-res/images/zeiger.png
-res/images/zifferblatt.png
-shared/.DS_Store
-shared/res/.DS_Store
-shared/res/pitchcontrol.png
-tizen-manifest.xml
+res/edje/pitchcontrol.edj

@@ -8,8 +8,8 @@
 #ifndef AUDIO_READ_H_
 #define AUDIO_READ_H_
 #include <Elementary.h>
-#include "audio_callback.h"
-void activateApp(appdata_s *ad);
-void deactivateApp(appdata_s *ad);
+
+void activateAudioModule();
+void deactivateAudioModule();
 
 #endif /* AUDIO_READ_H_ */
