@@ -12,14 +12,11 @@
 #include "fourier.h"
 #define BUFFSIZE 32768
 
-Evas_Object *layout, *window;
-
 /*
  * Berechnet die Anzahl Halbtöne, die der gesuchte Ton vom Kammerton entfernt ist und zählt vier Oktaven dazu.
  */
-static int calculateHalfTones(float freq) {
-	int halftones = (int)(12. / M_LN2 * (log(freq) - log(440.)) + 48.5);
-	return halftones;
+static double calculateHalfTones(float freq) {
+	return 12. / M_LN2 * (log(freq) - log(440.)) + 48.5;
 }
 
 const static char *note[] = {
@@ -35,10 +32,6 @@ const static char *octave[MAXOCTAVE] = {
 const static char *accidental[] = {
 		"", "#", "", "", "#", "", "#", "", "", "#", "", "#"
 };
-
-void updateLabel(char *txt) {
-	elm_object_part_text_set(layout, "hertz", txt);
-}
 
 /*
  * @brief Rotate hands of the watch
@@ -59,29 +52,48 @@ void view_rotate_hand(Evas_Object *hand, double degree, Evas_Coord cx, Evas_Coor
 	evas_map_free(m);
 }
 
-void displayNote(float freq) {
+float oldfreq = 0.;
+
+void displayNote(float freq, appdata_s *ad) {
+	if (freq == oldfreq)
+		return;
+	elm_win_norender_push(ad->win);
 	char hertzstr[32];
+	double deg = 0.;
 	if (freq > 10.) {
-		int halftones = calculateHalfTones(freq);
-		int octaveidx = (halftones - 3) / 12;
-		int noteidx = halftones % 12;
+		double halftones = calculateHalfTones(freq);
+		int fht = (int)halftones;
+		int octaveidx = (fht - 3) / 12;
+		int noteidx = fht % 12;
 		sprintf(hertzstr, "%.1f Hz", freq);
 //		Evas_Object *hand = elm_object_part_content_get(layout, "hand_cent");
 //		view_rotate_hand(hand, 2., 180, 180);
 //		elm_object_part_content_set(layout, "hand_cent", hand);
-		elm_object_part_text_set(layout, "hertz", hertzstr);
-		elm_object_part_text_set(layout, "note_name", note[noteidx]);
-		elm_object_part_text_set(layout, "accidental", accidental[noteidx]);
+		evas_object_text_text_set(ad->freq, hertzstr);
+		evas_object_text_text_set(ad->note, note[noteidx]);
+		evas_object_text_text_set(ad->accidental, accidental[noteidx]);
 		if (octaveidx < MAXOCTAVE)
-			elm_object_part_text_set(layout, "octave", octave[octaveidx]);
+			evas_object_text_text_set(ad->octave, octave[octaveidx]);
 		else
-			elm_object_part_text_set(layout, "octave", "");
+			evas_object_text_text_set(ad->octave, "");
+		deg = (halftones - 0.5 - fht) * 40.;
 	} else {
-		elm_object_part_text_set(layout, "hertz", "");
-		elm_object_part_text_set(layout, "note_name", "-");
-		elm_object_part_text_set(layout, "accidental", "");
-		elm_object_part_text_set(layout, "octave", "");
+		evas_object_text_text_set(ad->freq, "");
+		evas_object_text_text_set(ad->note, "-");
+		evas_object_text_text_set(ad->accidental, "");
+		evas_object_text_text_set(ad->octave, "");
 	}
+	Evas_Map *rot = evas_map_new(4);
+	evas_map_util_points_populate_from_object(rot, ad->hand);
+	evas_map_point_image_uv_set(rot, 0, 0., 0.);
+	evas_map_point_image_uv_set(rot, 1, 60., 0.);
+	evas_map_point_image_uv_set(rot, 2, 60., 720.);
+	evas_map_point_image_uv_set(rot, 3, 0., 720.);
+	evas_map_util_rotate(rot, deg, ad->centerX, ad->centerY);
+	evas_object_map_set(ad->hand, rot);
+	evas_object_map_enable_set(ad->hand, EINA_TRUE);
+	elm_win_render(ad->win);
+	elm_win_norender_pop(ad->win);
 }
 
 float data[BUFFSIZE];
@@ -99,7 +111,7 @@ float absquad(float *dptr) {
 	return dptr[0] * dptr[0] + dptr[1] * dptr[1];
 }
 
-void evaluate_audio() {
+void evaluate_audio(appdata_s *ad) {
 	realft(data - 1, BUFFSIZE, 1);
 	// GetMax
 	float maxval = 0;
@@ -119,9 +131,9 @@ void evaluate_audio() {
 		float yp = sqrt(absquad(data + maxidx + 1));
 		float corr = (ym - yp) / (2. * ym - 4. * y0 + 2. * yp);
 		float freq = ((float) maxidx + corr) * SAMPLE_RATE / BUFFSIZE;
-		displayNote(freq);
+		displayNote(freq, ad);
 	} else {
-		displayNote(0.f);
+		displayNote(0.f, ad);
 	}
 }
 
@@ -137,7 +149,7 @@ void io_stream_callback(audio_in_h handle, size_t nbytes, void *userdata) {
 			audio_in_drop(handle);
 			if (dataptr >= dataend)  {
 				working = 1;
-				evaluate_audio();
+				evaluate_audio((appdata_s *)userdata);
 				reset_data();
 				working = 0;
 			}

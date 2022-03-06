@@ -2,11 +2,6 @@
 #include "audio_read.h"
 #include "audio_callback.h"
 
-typedef struct appdata{
-	Evas_Object *win, *note, *accidental, *freq, *octave;
-	Evas_Map *rot;
-} appdata_s;
-
 static void
 win_delete_request_cb(void *data, Evas_Object *obj, void *event_info)
 {
@@ -54,12 +49,11 @@ static void
 create_base_gui(appdata_s *ad)
 {
 	int winwidth, winheight, centerX, centerY;
-
 	/* Window */
 	ad->win = elm_win_util_standard_add(PACKAGE, PACKAGE);
 	elm_win_screen_size_get(ad->win, NULL, NULL, &winwidth, &winheight);
-	centerX = winwidth / 2;
-	centerY = winheight / 2;
+	ad->centerX = centerX = winwidth / 2;
+	ad->centerY = centerY = winheight / 2;
 	elm_win_autodel_set(ad->win, EINA_TRUE);
 
 	if (elm_win_wm_rotation_supported_get(ad->win)) {
@@ -71,42 +65,29 @@ create_base_gui(appdata_s *ad)
 	eext_object_event_callback_add(ad->win, EEXT_CALLBACK_BACK, win_back_cb, ad);
 	evas_object_show(ad->win);
 
-	Evas *canvas = evas_object_evas_get(ad->win);
+	Evas *canvas = ad->canvas = evas_object_evas_get(ad->win);
 	/* Image */
 	addImage(canvas, "images/centdial.png", 0, 0, winwidth, winheight);
-	Evas_Object *hand = addImage(canvas, "images/hand_cent.png", centerX - 15, 10, 30, winheight - 20);
-	ad->rot = evas_map_new(4);
-	evas_map_util_points_populate_from_object(ad->rot, hand);
-	evas_map_point_image_uv_set(ad->rot, 0, 0., 0.);
-	evas_map_point_image_uv_set(ad->rot, 1, 60., 0.);
-	evas_map_point_image_uv_set(ad->rot, 2, 60., 720.);
-	evas_map_point_image_uv_set(ad->rot, 3, 0., 720.);
-	evas_map_util_rotate(ad->rot, 55, centerX, centerY);
-	evas_object_map_set(hand, ad->rot);
-	evas_object_map_enable_set(hand, EINA_TRUE);
-	evas_object_show(hand);
+	ad->hand = addImage(canvas, "images/hand_cent.png", centerX - 15, 10, 30, winheight - 20);
 	ad->note = evas_object_text_add(canvas);
 	evas_object_text_font_set(ad->note, "TizenSans:style=bold", 140);
-	evas_object_text_text_set(ad->note, "A");
+	evas_object_text_text_set(ad->note, "-");
 	evas_object_text_style_set(ad->note, EVAS_TEXT_STYLE_TIZEN_GLOW_SHADOW);
 	evas_object_color_set(ad->note, 0, 127, 255, 255);
 	evas_object_move(ad->note, centerX - 45, centerY - 100);
 	evas_object_show(ad->note);
 	ad->accidental = evas_object_text_add(canvas);
 	evas_object_text_font_set(ad->accidental, "TizenSans:style=bold", 40);
-	evas_object_text_text_set(ad->accidental, "#");
 	evas_object_color_set(ad->accidental, 0, 220, 255, 255);
 	evas_object_move(ad->accidental, centerX + 28, centerY - 80);
 	evas_object_show(ad->accidental);
 	ad->octave = evas_object_text_add(canvas);
 	evas_object_text_font_set(ad->octave, "TizenSans:style=bold", 32);
-	evas_object_text_text_set(ad->octave, "sub'");
 	evas_object_color_set(ad->octave, 0, 220, 128, 255);
 	evas_object_move(ad->octave, centerX - 100, centerY - 16);
 	evas_object_show(ad->octave);
 	ad->freq = evas_object_text_add(canvas);
 	evas_object_text_font_set(ad->freq, "TizenSans:style=bold", 32);
-	evas_object_text_text_set(ad->freq, "440 Hz");
 	evas_object_color_set(ad->freq, 0, 128, 128, 255);
 	evas_object_move(ad->freq, centerX - 45, centerY + 45);
 	evas_object_show(ad->freq);
@@ -129,7 +110,7 @@ app_create(void *data)
 static void
 app_control(app_control_h app_control, void *data)
 {
-//	activateAudioModule();
+	activateAudioModule((appdata_s *)data);
 //    /* register the timer */
 //    ecore_timer_add(0.2, cb_keepAlive, NULL);
 }
@@ -144,7 +125,7 @@ app_pause(void *data)
 static void
 app_resume(void *data)
 {
-//	activateAudioModule();
+	activateAudioModule((appdata_s *)data);
 //    /* register the timer */
 //    ecore_timer_add(0.2, cb_keepAlive, NULL);
 }

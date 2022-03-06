@@ -15,13 +15,13 @@
 audio_in_h input;
 char isActive = 0;
 
-void printError(char *msg, int code) {
+void printError(appdata_s *ad, char *msg, int code) {
 	char txt[80];
 	sprintf(txt, "%s: %d", msg, code);
-	updateLabel(txt);
+	evas_object_text_text_set(ad->freq, txt);
 }
 
-void activateAudioModule() {
+void activateAudioModule(appdata_s *ad) {
 	if (isActive)
 		return;
 	audio_io_error_e error_code;
@@ -31,18 +31,18 @@ void activateAudioModule() {
 	error_code = audio_in_create(SAMPLE_RATE, AUDIO_CHANNEL_MONO,
 			AUDIO_SAMPLE_TYPE_S16_LE, &input);
 	if (error_code) {
-		printError("Fehler audio_in_create", error_code);
+		printError(ad, "Fehler audio_in_create", error_code);
 		return;
 	}
-	error_code = audio_in_set_stream_cb(input, io_stream_callback, NULL);
+	error_code = audio_in_set_stream_cb(input, io_stream_callback, ad);
 	if (error_code) {
-		printError("Fehler audio_in_set_stream", error_code);
+		printError(ad, "Fehler audio_in_set_stream", error_code);
 		return;
 	}
 	reset_data();
 	error_code = audio_in_prepare(input);
 	if (error_code) {
-		printError("Fehler audio_in_prepare", error_code);
+		printError(ad, "Fehler audio_in_prepare", error_code);
 		return;
 	}
 	isActive = 1;
