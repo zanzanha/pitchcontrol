@@ -3,7 +3,7 @@
     <description>Determines the frequency and pitch value of the predominant sound.</description>
     <profile name="wearable"/>
     <ui-application appid="priv.sper.pitchcontrol" exec="pitchcontrol" multiple="false" nodisplay="false" taskmanage="true" type="capp">
-        <label>pitchcontrol</label>
+        <label>Pitch Control</label>
         <icon>pitchcontrol.png</icon>
     </ui-application>
     <privileges>

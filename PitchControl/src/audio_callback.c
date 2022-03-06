@@ -73,7 +73,7 @@ void displayNote(float freq, appdata_s *ad) {
 			evas_object_text_text_set(ad->octave, octave[octaveidx]);
 		else
 			evas_object_text_text_set(ad->octave, "");
-		deg = (halftones - 0.5 - fht) * 40.;
+		deg = (halftones - 0.5 - fht) * 80.;
 	} else {
 		evas_object_text_text_set(ad->freq, "-------");
 		evas_object_text_text_set(ad->note, "");
@@ -118,7 +118,7 @@ void evaluate_audio(float *data, appdata_s *ad) {
 			maxidx = i / 2;
 		}
 	}
-	if (maxval * maxidx > 5.e10) {
+	if (maxval * maxidx > 2.e10) {
 		// Aufgrund der Werte der Nachbarpunkte und einer quadratischen Interpolation
 		// versuchen wir die Frequenz noch genauer abzuschätzen.
 		float ym = sqrt(absquad(data + maxidx - 1));

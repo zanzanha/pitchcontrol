@@ -26,11 +26,6 @@ app_get_resource(const char *edj_file_in, char *edj_path_out, int edj_path_max)
 	}
 }
 
-static Eina_Bool cb_keepAlive(void *data)
-{
-	return ECORE_CALLBACK_RENEW;
-}
-
 static Ecore_Timer *timer;
 
 static Evas_Object *addImage(Evas* canvas, char *imagepath, int xpos, int ypos, int width, int height) {
