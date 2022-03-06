@@ -26,7 +26,7 @@ void reset_data();
 void io_stream_callback(audio_in_h handle, size_t nbytes, void *userdata);
 
 typedef struct appdata{
-	Evas_Object *win, *note, *accidental, *freq, *octave, *hand, *waiting;
+	Evas_Object *win, *note, *accidental, *freq, *octave, *hand;
 	Evas *canvas;
 	char isActive;
 	int centerX, centerY;

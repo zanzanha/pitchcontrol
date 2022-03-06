@@ -27,7 +27,6 @@ const static char *accidental[] = {
 };
 
 char language[3];
-int waitCycles = 0;
 /*
  * @brief Rotate hands of the watch
  * @param[in] hand The hand you want to rotate
@@ -51,14 +50,6 @@ Eina_Bool displayNote(void *data) {
 	appdata_s *ad = data;
 //	dlog_print(DLOG_DEBUG, LOG_TAG, "Timer was triggered: NewFreq: %f, oldFreq: %f", ad->newFreq, ad->dispFreq);
 	if (ad->newFreq == ad->dispFreq) {
-		if (++waitCycles % 20 == 0) {
-			evas_object_show(ad->waiting);
-			audio_in_unprepare(ad->input);
-			audio_in_destroy(ad->input);
-			audio_in_create(SAMPLE_RATE, AUDIO_CHANNEL_MONO, AUDIO_SAMPLE_TYPE_S16_LE, &ad->input);
-			audio_in_set_stream_cb(ad->input, io_stream_callback, ad);
-			audio_in_prepare(ad->input);
-		}
 		return ad->isActive;
 	}
 	float freq = ad->newFreq;
@@ -141,11 +132,6 @@ void io_stream_callback(audio_in_h handle, size_t nbytes, void *userdata) {
 	appdata_s *ad = (appdata_s *)userdata;
 //    dlog_print(DLOG_DEBUG, LOG_TAG, "Peeking %d bytes", nbytes);
 	if (nbytes > 0) {
-		if (waitCycles > 9) {
-			evas_object_hide(ad->waiting);
-		}
-		waitCycles = 0;
-		audio_in_peek(handle, &buffer, &nbytes);
 		short *buffend = ((char *)buffer) + nbytes;
 		while (buffer < buffend) {
 			data[activebuf][idx++] = *buffer++;

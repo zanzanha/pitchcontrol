@@ -82,15 +82,6 @@ create_base_gui(appdata_s *ad)
 	evas_object_color_set(ad->freq, 0, 128, 128, 255);
 	evas_object_move(ad->freq, centerX - 45, centerY + 60);
 	evas_object_show(ad->freq);
-	ad->waiting = evas_object_textblock_add(canvas);
-    Evas_Textblock_Style *st = evas_textblock_style_new();
-    evas_textblock_style_set(st, "DEFAULT='font=Sans font_size=28 color=#ffC000 wrap=word align=center'");
-    evas_object_textblock_style_set(ad->waiting, st);
-    evas_object_textblock_valign_set(ad->waiting, 0.5);
-    evas_object_textblock_text_markup_set(ad->waiting, "Audio input line is busy. Please wait!");
-    evas_object_resize(ad->waiting, 200, 200);
-    evas_object_move(ad->waiting, 80., 80.);
-    evas_textblock_style_free(st);
 	audio_io_error_e error_code;
 
 	error_code = audio_in_create(SAMPLE_RATE, AUDIO_CHANNEL_MONO,
