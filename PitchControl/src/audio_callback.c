@@ -27,6 +27,7 @@ const static char *accidental[] = {
 };
 
 char language[3];
+int waitCount = 0;
 
 void printError(appdata_s *ad, char *msg, int code) {
 	char txt[80];
@@ -56,13 +57,17 @@ void view_rotate_hand(Evas_Object *hand, double degree, Evas_Coord cx, Evas_Coor
 Eina_Bool displayNote(void *data) {
 	appdata_s *ad = data;
 //	dlog_print(DLOG_DEBUG, LOG_TAG, "Timer was triggered: NewFreq: %f, oldFreq: %f", ad->newFreq, ad->dispFreq);
+	activateAudio(ad);
 	if (ad->newFreq == ad->dispFreq) {
+		if (waitCount > 5)  {
+			activateAudio(ad);
+		}
 		return ad->isActive;
 	}
 	float freq = ad->newFreq;
 	char hertzstr[32];
 	double deg = 0.;
-	if (freq > 10.) {
+	if (freq > 15.) {
 		double halftones = calculateHalfTones(freq);
 		int fht = (int)halftones;
 		int octaveidx = (fht - 3) / 12;
@@ -139,6 +144,7 @@ void io_stream_callback(audio_in_h handle, size_t nbytes, void *userdata) {
 	appdata_s *ad = (appdata_s *)userdata;
 //    dlog_print(DLOG_DEBUG, LOG_TAG, "Peeking %d bytes", nbytes);
 	if (nbytes > 0) {
+		waitCount = 0;
 		audio_in_peek(handle, &buffer, &nbytes);
 		short *buffend = ((char *)buffer) + nbytes;
 		while (buffer < buffend) {
@@ -157,6 +163,7 @@ void io_stream_callback(audio_in_h handle, size_t nbytes, void *userdata) {
 }
 
 void activateAudio(appdata_s *ad) {
+	waitCount = 0;
 	if (ad->audioActive) {
 		dlog_print(DLOG_INFO, LOG_TAG, "Audio Module is already active");
 		return;

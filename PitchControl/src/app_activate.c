@@ -45,7 +45,6 @@ void activateApp(appdata_s *ad) {
 	}
 	dlog_print(DLOG_INFO, LOG_TAG, "App activation Requested");
 
-	activateAudio(ad);
 	ad->isActive = 1;
 	device_power_request_lock(POWER_LOCK_DISPLAY, 180000);
 	char *locale;
