@@ -67,7 +67,7 @@ void activateApp(appdata_s *ad) {
 	}
 	evas_object_move(ad->note, ad->centerX - x, ad->centerY - y);
 	evas_object_text_font_set(ad->note, "TizenSans:style=bold", notesize);
-	dlog_print(DLOG_INFO, LOG_TAG, "Audio Record Start Executed");
+	dlog_print(DLOG_INFO, LOG_TAG, "App was activated");
 	ad->timer = ecore_timer_add(0.08, displayNote, ad);
 	ad->newFreq = 0.;
 	displayNote(ad);
@@ -78,9 +78,9 @@ void deactivateApp(appdata_s *ad) {
 		dlog_print(DLOG_INFO, LOG_TAG, "App is already inactive");
 		return;
 	}
-	deactivateAudio(ad);
 	device_power_release_lock(POWER_LOCK_DISPLAY);
-	ecore_timer_del(ad->timer);
 	ad->isActive = 0;
-	dlog_print(DLOG_INFO, LOG_TAG, "App inactivated");
+	time(&ad->pauseTime);
+	dlog_print(DLOG_INFO, LOG_TAG, "App deactivated");
+	ecore_timer_add(30., deactivateAudio, ad);
 }

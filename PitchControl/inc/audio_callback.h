@@ -14,6 +14,7 @@
 #define AUDIO_CALLBACK_H_
 #include <Elementary.h>
 #include <audio_io.h>
+#include <time.h>
 
 #define SAMPLE_RATE 44100
 #define MAXOCTAVE 8
@@ -26,6 +27,7 @@ void reset_data();
 typedef struct appdata{
 	Evas_Object *win, *note, *accidental, *freq, *octave, *hand;
 	Evas *canvas;
+	time_t pauseTime;
 	char isActive, audioActive;
 	int centerX, centerY;
 	Ecore_Timer *timer;
@@ -34,8 +36,8 @@ typedef struct appdata{
 } appdata_s;
 
 Eina_Bool displayNote(void *ad);
-void activateAudio(appdata_s *ad);
-void deactivateAudio(appdata_s *ad);
+Eina_Bool deactivateAudio(void *data);
 void printError(appdata_s *ad, char *msg, int code);
+void io_stream_callback(audio_in_h handle, size_t nbytes, void *userdata);
 
 #endif /* AUDIO_CALLBACK_H_ */
