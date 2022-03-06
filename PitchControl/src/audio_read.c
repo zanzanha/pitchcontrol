@@ -38,17 +38,14 @@ const static char *octave_lat[MAXOCTAVE] = {
 		"o-1", "o1", "o2", "o3", "o4", "o5", "o6", "o7"
 };
 
-audio_in_h input;
-char isActive = 0;
-
 void printError(appdata_s *ad, char *msg, int code) {
 	char txt[80];
 	sprintf(txt, "%s: %d", msg, code);
 	evas_object_text_text_set(ad->freq, txt);
 }
 
-void activateAudioModule_locked(appdata_s *ad) {
-	if (isActive) {
+void activateAudioModule(appdata_s *ad) {
+	if (ad->isActive) {
 		dlog_print(DLOG_INFO, LOG_TAG, "Audio Module is already active");
 		return;
 	}
@@ -58,25 +55,25 @@ void activateAudioModule_locked(appdata_s *ad) {
 	// Initialize the audio input device
 
 	error_code = audio_in_create(SAMPLE_RATE, AUDIO_CHANNEL_MONO,
-			AUDIO_SAMPLE_TYPE_S16_LE, &input);
+			AUDIO_SAMPLE_TYPE_S16_LE, &ad->input);
 	if (error_code) {
 		printError(ad, "Fehler audio_in_create", error_code);
 		return;
 	}
-	error_code = audio_in_set_stream_cb(input, io_stream_callback, ad);
+	error_code = audio_in_set_stream_cb(ad->input, io_stream_callback, ad);
 	if (error_code) {
 		printError(ad, "Fehler audio_in_set_stream", error_code);
-		error_code = audio_in_destroy(input);
+		error_code = audio_in_destroy(ad->input);
 		return;
 	}
 	reset_data();
-	error_code = audio_in_prepare(input);
+	error_code = audio_in_prepare(ad->input);
 	if (error_code) {
 		printError(ad, "Fehler audio_in_prepare", error_code);
-		error_code = audio_in_destroy(input);
+		error_code = audio_in_destroy(ad->input);
 		return;
 	}
-	isActive = 1;
+	ad->isActive = 1;
 	device_power_request_lock(POWER_LOCK_DISPLAY, 180000);
 	char *locale;
 	system_settings_get_value_string(SYSTEM_SETTINGS_KEY_LOCALE_LANGUAGE, &locale);
@@ -100,28 +97,26 @@ void activateAudioModule_locked(appdata_s *ad) {
 	evas_object_text_font_set(ad->note, "TizenSans:style=bold", notesize);
 	dlog_print(DLOG_INFO, LOG_TAG, "Audio Record Start Executed");
 	ad->timer = ecore_timer_add(0.08, displayNote, ad);
-}
-
-void activateAudioModule(appdata_s *ad) {
-	eina_lock_take(&ad->mutex);
-	activateAudioModule_locked(ad);
-	eina_lock_release(&ad->mutex);
+	ad->newFreq = 0.;
+	displayNote(ad);
 }
 
 void deactivateAudioModule(appdata_s *ad) {
-	eina_lock_take(&ad->mutex);
-	if (!isActive) {
+	if (!ad->isActive) {
 		dlog_print(DLOG_INFO, LOG_TAG, "Audio Module is already inactive");
-		eina_lock_release(&ad->mutex);
 		return;
 	}
 	dlog_print(DLOG_INFO, LOG_TAG, "Audio Record Stop Requested");
 	int error_code;
+	error_code = audio_in_unprepare(ad->input);
+	if (error_code) {
+		dlog_print(DLOG_ERROR, LOG_TAG, "Fehler %d bei Deactivate!", error_code);
+	}
+	error_code = audio_in_destroy(ad->input);
+	if (error_code) {
+		dlog_print(DLOG_ERROR, LOG_TAG, "Fehler %d bei destroy!", error_code);
+	}
 	device_power_release_lock(POWER_LOCK_DISPLAY);
-	error_code = audio_in_unprepare(input);
-	error_code = audio_in_destroy(input);
-	isActive = 0;
+	ad->isActive = 0;
 	dlog_print(DLOG_INFO, LOG_TAG, "Audio Record Stop Executed");
-	ecore_timer_del(ad->timer);
-	eina_lock_release(&ad->mutex);
 }

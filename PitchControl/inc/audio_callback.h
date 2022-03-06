@@ -26,12 +26,13 @@ void reset_data();
 void io_stream_callback(audio_in_h handle, size_t nbytes, void *userdata);
 
 typedef struct appdata{
-	Evas_Object *win, *note, *accidental, *freq, *octave, *hand;
+	Evas_Object *win, *note, *accidental, *freq, *octave, *hand, *waiting;
 	Evas *canvas;
+	char isActive;
 	int centerX, centerY;
-	Eina_Lock mutex;
 	Ecore_Timer *timer;
 	float dispFreq, newFreq;
+	audio_in_h input;
 } appdata_s;
 
 Eina_Bool displayNote(void *ad);

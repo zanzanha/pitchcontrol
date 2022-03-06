@@ -27,7 +27,7 @@ const static char *accidental[] = {
 };
 
 char language[3];
-
+int waitCycles = 0;
 /*
  * @brief Rotate hands of the watch
  * @param[in] hand The hand you want to rotate
@@ -47,12 +47,20 @@ void view_rotate_hand(Evas_Object *hand, double degree, Evas_Coord cx, Evas_Coor
 	evas_map_free(m);
 }
 
-float oldfreq = -3.;
-
 Eina_Bool displayNote(void *data) {
 	appdata_s *ad = data;
-	if (ad->newFreq == ad->dispFreq)
-		return EINA_TRUE;
+//	dlog_print(DLOG_DEBUG, LOG_TAG, "Timer was triggered: NewFreq: %f, oldFreq: %f", ad->newFreq, ad->dispFreq);
+	if (ad->newFreq == ad->dispFreq) {
+		if (++waitCycles % 20 == 0) {
+			evas_object_show(ad->waiting);
+			audio_in_unprepare(ad->input);
+			audio_in_destroy(ad->input);
+			audio_in_create(SAMPLE_RATE, AUDIO_CHANNEL_MONO, AUDIO_SAMPLE_TYPE_S16_LE, &ad->input);
+			audio_in_set_stream_cb(ad->input, io_stream_callback, ad);
+			audio_in_prepare(ad->input);
+		}
+		return ad->isActive;
+	}
 	float freq = ad->newFreq;
 	char hertzstr[32];
 	double deg = 0.;
@@ -86,7 +94,7 @@ Eina_Bool displayNote(void *data) {
 	evas_object_map_set(ad->hand, rot);
 	evas_object_map_enable_set(ad->hand, EINA_TRUE);
 	ad->dispFreq = freq;
-	return EINA_TRUE;
+	return ad->isActive;
 }
 
 float data[2][BUFFSIZE];
@@ -107,13 +115,13 @@ void evaluate_audio(float *data, appdata_s *ad) {
 	float maxval = 0;
 	int maxidx = 0;
 	for (int i = 40; i < BUFFSIZE; i += 2) {
-		float val = absquad(data + i) / i;
+		float val = absquad(data + i) / (i + 100);
 		if (val > maxval) {
 			maxval = val;
 			maxidx = i / 2;
 		}
 	}
-	if (maxval * maxidx > 3.e10) {
+	if (maxval * maxidx > 1.e10) {
 		// Aufgrund der Werte der Nachbarpunkte und einer quadratischen Interpolation
 		// versuchen wir die Frequenz noch genauer abzuschätzen.
 		float ym = sqrt(absquad(data + maxidx - 1));
@@ -130,7 +138,13 @@ void evaluate_audio(float *data, appdata_s *ad) {
 void io_stream_callback(audio_in_h handle, size_t nbytes, void *userdata) {
 	const short *buffer;
 	float *evalbuf = NULL;
+	appdata_s *ad = (appdata_s *)userdata;
+//    dlog_print(DLOG_DEBUG, LOG_TAG, "Peeking %d bytes", nbytes);
 	if (nbytes > 0) {
+		if (waitCycles > 9) {
+			evas_object_hide(ad->waiting);
+		}
+		waitCycles = 0;
 		audio_in_peek(handle, &buffer, &nbytes);
 		short *buffend = ((char *)buffer) + nbytes;
 		while (buffer < buffend) {
@@ -144,7 +158,7 @@ void io_stream_callback(audio_in_h handle, size_t nbytes, void *userdata) {
 		}
 		audio_in_drop(handle);
 		if (evalbuf != NULL)
-			evaluate_audio(evalbuf, (appdata_s *)userdata);
+			evaluate_audio(evalbuf, ad);
 	}
 }
 
