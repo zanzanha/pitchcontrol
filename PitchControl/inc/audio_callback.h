@@ -28,7 +28,7 @@ typedef struct appdata{
 	Evas_Object *win, *note, *accidental, *freq, *octave, *hand;
 	Evas *canvas;
 	time_t pauseTime;
-	char isActive, audioActive;
+	char isActive;
 	int centerX, centerY;
 	Ecore_Timer *timer;
 	float dispFreq, newFreq;

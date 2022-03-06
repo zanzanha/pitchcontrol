@@ -69,6 +69,7 @@ void activateApp(appdata_s *ad) {
 	evas_object_text_font_set(ad->note, "TizenSans:style=bold", notesize);
 	dlog_print(DLOG_INFO, LOG_TAG, "App was activated");
 	ad->timer = ecore_timer_add(0.08, displayNote, ad);
+	reset_data();
 	ad->newFreq = 0.;
 	displayNote(ad);
 }

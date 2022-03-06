@@ -75,10 +75,6 @@ void evaluate_audio(float *data, appdata_s *ad) {
 
 Eina_Bool deactivateAudio(void *data) {
 	appdata_s *ad = (appdata_s *)data;
-	if (!ad->audioActive) {
-		dlog_print(DLOG_INFO, LOG_TAG, "Audio Module is already inactive");
-		return EINA_FALSE;
-	}
 	time_t now = time(0);
 	if (now - ad->pauseTime > 28) {
 		dlog_print(DLOG_INFO, LOG_TAG, "Audio Record Stop Requested");
@@ -87,7 +83,6 @@ Eina_Bool deactivateAudio(void *data) {
 		if (error_code) {
 			dlog_print(DLOG_ERROR, LOG_TAG, "Fehler %d bei Deactivate!", error_code);
 		}
-		ad->audioActive = 0;
 		dlog_print(DLOG_INFO, LOG_TAG, "Audio Record Stop Executed");
 	}
 	return EINA_FALSE;
@@ -130,10 +125,6 @@ void io_stream_callback(audio_in_h handle, size_t nbytes, void *userdata) {
  */
 void activateAudio(appdata_s *ad) {
 	waitCount = 0;
-	if (ad->audioActive) {
-		dlog_print(DLOG_INFO, LOG_TAG, "Audio Module is already active");
-		return;
-	}
 	dlog_print(DLOG_INFO, LOG_TAG, "Audio Record Start Requested");
 	audio_io_error_e error_code;
 
@@ -143,7 +134,6 @@ void activateAudio(appdata_s *ad) {
 		printError(ad, "Fehler audio_in_prepare", error_code);
 		return;
 	}
-	ad->audioActive = 1;
 	dlog_print(DLOG_INFO, LOG_TAG, "Audio was activated");
 }
 
