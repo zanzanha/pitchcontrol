@@ -10,7 +10,7 @@
 #ifdef  LOG_TAG
 #undef  LOG_TAG
 #endif
-#define LOG_TAG "pitchcontrol"
+#define LOG_TAG "PITCHCONTROL"
 
 #if !defined(PACKAGE)
 #define PACKAGE "priv.sper.pitchcontrol"

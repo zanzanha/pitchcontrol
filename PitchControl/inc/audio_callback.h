@@ -5,6 +5,11 @@
  *      Author: a552095
  */
 
+#ifdef  LOG_TAG
+#undef  LOG_TAG
+#endif
+#define LOG_TAG "PITCHCONTROL"
+
 #ifndef AUDIO_CALLBACK_H_
 #define AUDIO_CALLBACK_H_
 #include <Elementary.h>
@@ -24,6 +29,7 @@ typedef struct appdata{
 	Evas_Object *win, *note, *accidental, *freq, *octave, *hand;
 	Evas *canvas;
 	int centerX, centerY;
+	Eina_Lock mutex;
 } appdata_s;
 
 

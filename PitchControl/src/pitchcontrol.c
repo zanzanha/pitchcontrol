@@ -94,20 +94,20 @@ app_create(void *data)
 	appdata_s *ad = data;
 
 	create_base_gui(ad);
-
+	eina_lock_new(&ad->mutex);
 	return true;
 }
 
 static void
 app_control(app_control_h app_control, void *data)
 {
-//	activateAudioModule((appdata_s *)data);
+	activateAudioModule((appdata_s *)data);
 }
 
 static void
 app_pause(void *data)
 {
-	deactivateAudioModule();
+	deactivateAudioModule((appdata_s *)data);
 }
 
 static void
@@ -119,7 +119,7 @@ app_resume(void *data)
 static void
 app_terminate(void *data)
 {
-	deactivateAudioModule();
+	deactivateAudioModule((appdata_s *)data);
 }
 
 static void
