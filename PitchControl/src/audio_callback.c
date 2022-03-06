@@ -5,6 +5,7 @@
  *      Author: a552095
  */
 #include "audio_callback.h"
+#include <dlog.h>
 
 #include <stdio.h>
 #include <math.h>
@@ -48,10 +49,11 @@ void view_rotate_hand(Evas_Object *hand, double degree, Evas_Coord cx, Evas_Coor
 
 float oldfreq = -3.;
 
-void displayNote(float freq, appdata_s *ad) {
-	if (freq == oldfreq)
-		return;
-	elm_win_norender_push(ad->win);
+Eina_Bool displayNote(void *data) {
+	appdata_s *ad = data;
+	if (ad->newFreq == ad->dispFreq)
+		return EINA_TRUE;
+	float freq = ad->newFreq;
 	char hertzstr[32];
 	double deg = 0.;
 	if (freq > 10.) {
@@ -83,9 +85,8 @@ void displayNote(float freq, appdata_s *ad) {
 	evas_map_util_rotate(rot, deg, ad->centerX, ad->centerY);
 	evas_object_map_set(ad->hand, rot);
 	evas_object_map_enable_set(ad->hand, EINA_TRUE);
-	elm_win_render(ad->win);
-	elm_win_norender_pop(ad->win);
-	oldfreq = freq;
+	ad->dispFreq = freq;
+	return EINA_TRUE;
 }
 
 float data[2][BUFFSIZE];
@@ -120,9 +121,9 @@ void evaluate_audio(float *data, appdata_s *ad) {
 		float yp = sqrt(absquad(data + maxidx + 1));
 		float corr = (ym - yp) / (2. * ym - 4. * y0 + 2. * yp);
 		float freq = ((float) maxidx + corr) * SAMPLE_RATE / BUFFSIZE;
-		displayNote(freq, ad);
+		ad->newFreq = freq;
 	} else {
-		displayNote(0.f, ad);
+		ad->newFreq = 0.f;
 	}
 }
 

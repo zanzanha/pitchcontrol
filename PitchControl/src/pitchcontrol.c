@@ -95,6 +95,9 @@ app_create(void *data)
 
 	create_base_gui(ad);
 	eina_lock_new(&ad->mutex);
+	ad->dispFreq = -1.f;
+	ad->newFreq = 0.f;
+	ad->timer = ecore_timer_add(0.1, displayNote, data);
 	return true;
 }
 

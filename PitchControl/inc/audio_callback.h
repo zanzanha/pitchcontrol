@@ -30,7 +30,10 @@ typedef struct appdata{
 	Evas *canvas;
 	int centerX, centerY;
 	Eina_Lock mutex;
+	Ecore_Timer *timer;
+	float dispFreq, newFreq;
 } appdata_s;
 
+Eina_Bool displayNote(void *ad);
 
 #endif /* AUDIO_CALLBACK_H_ */

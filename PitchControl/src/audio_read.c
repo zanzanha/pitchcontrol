@@ -99,6 +99,7 @@ void activateAudioModule_locked(appdata_s *ad) {
 	evas_object_move(ad->note, ad->centerX - x, ad->centerY - y);
 	evas_object_text_font_set(ad->note, "TizenSans:style=bold", notesize);
 	dlog_print(DLOG_INFO, LOG_TAG, "Audio Record Start Executed");
+	ad->timer = ecore_timer_add(0.08, displayNote, ad);
 }
 
 void activateAudioModule(appdata_s *ad) {
@@ -121,5 +122,6 @@ void deactivateAudioModule(appdata_s *ad) {
 	error_code = audio_in_destroy(input);
 	isActive = 0;
 	dlog_print(DLOG_INFO, LOG_TAG, "Audio Record Stop Executed");
+	ecore_timer_del(ad->timer);
 	eina_lock_release(&ad->mutex);
 }
