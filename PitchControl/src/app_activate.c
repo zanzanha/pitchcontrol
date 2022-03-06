@@ -39,13 +39,8 @@ const static char *octave_lat[MAXOCTAVE] = {
 };
 
 void activateApp(appdata_s *ad) {
-	if (ad->isActive) {
-		dlog_print(DLOG_INFO, LOG_TAG, "App is already active");
-		return;
-	}
 	dlog_print(DLOG_INFO, LOG_TAG, "App activation Requested");
 
-	ad->isActive = 1;
 	device_power_request_lock(POWER_LOCK_DISPLAY, 180000);
 	char *locale;
 	system_settings_get_value_string(SYSTEM_SETTINGS_KEY_LOCALE_LANGUAGE, &locale);
@@ -68,20 +63,13 @@ void activateApp(appdata_s *ad) {
 	evas_object_move(ad->note, ad->centerX - x, ad->centerY - y);
 	evas_object_text_font_set(ad->note, "TizenSans:style=bold", notesize);
 	dlog_print(DLOG_INFO, LOG_TAG, "App was activated");
-	ad->timer = ecore_timer_add(0.08, displayNote, ad);
 	reset_data();
-	ad->newFreq = 0.;
-	displayNote(ad);
+	displayNote(ad, 0.f);
+	ad->thread = startRecordThread(ad);
 }
 
 void deactivateApp(appdata_s *ad) {
-	if (!ad->isActive) {
-		dlog_print(DLOG_INFO, LOG_TAG, "App is already inactive");
-		return;
-	}
 	device_power_release_lock(POWER_LOCK_DISPLAY);
-	ad->isActive = 0;
-	time(&ad->pauseTime);
+	ecore_thread_cancel(ad->thread);
 	dlog_print(DLOG_INFO, LOG_TAG, "App deactivated");
-	ecore_timer_add(30., deactivateAudio, ad);
 }

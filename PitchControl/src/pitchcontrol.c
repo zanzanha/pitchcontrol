@@ -95,9 +95,6 @@ app_create(void *data)
 
 	create_base_gui(ad);
 	ad->dispFreq = -1.f;
-	ad->newFreq = 0.f;
-	ad->timer = ecore_timer_add(0.1, displayNote, data);
-	ad->isActive = 0;
 	// Initialize the audio input device
 	// Initialize the audio input device
 

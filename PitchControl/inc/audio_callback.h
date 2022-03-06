@@ -27,17 +27,14 @@ void reset_data();
 typedef struct appdata{
 	Evas_Object *win, *note, *accidental, *freq, *octave, *hand;
 	Evas *canvas;
-	time_t pauseTime;
-	char isActive;
 	int centerX, centerY;
-	Ecore_Timer *timer;
-	float dispFreq, newFreq;
+	float dispFreq;
 	audio_in_h input;
+	Ecore_Thread *thread;
 } appdata_s;
 
-Eina_Bool displayNote(void *ad);
-Eina_Bool deactivateAudio(void *data);
+void displayNote(appdata_s *ad, float freq);
 void printError(appdata_s *ad, char *msg, int code);
-void io_stream_callback(audio_in_h handle, size_t nbytes, void *userdata);
+Ecore_Thread *startRecordThread(appdata_s *ad);
 
 #endif /* AUDIO_CALLBACK_H_ */

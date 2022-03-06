@@ -27,7 +27,6 @@ const static char *accidental[] = {
 };
 
 char language[3];
-int waitCount = 0;
 float data[2][BUFFSIZE];
 int nproc = 0, activebuf = 0, idx = 0;
 
@@ -47,7 +46,7 @@ void printError(appdata_s *ad, char *msg, int code) {
 	evas_object_text_text_set(ad->freq, txt);
 }
 
-void evaluate_audio(float *data, appdata_s *ad) {
+float evaluate_audio(float *data, appdata_s *ad) {
 	realft(data - 1, BUFFSIZE, 1);
 	// GetMax
 	float maxval = 0;
@@ -67,24 +66,16 @@ void evaluate_audio(float *data, appdata_s *ad) {
 		float yp = sqrt(absquad(data + maxidx + 1));
 		float corr = (ym - yp) / (2. * ym - 4. * y0 + 2. * yp);
 		float freq = ((float) maxidx + corr) * SAMPLE_RATE / BUFFSIZE;
-		ad->newFreq = freq;
+		return freq;
 	} else {
-		ad->newFreq = 0.f;
+		return 0.f;
 	}
 }
 
-void io_stream_callback(audio_in_h handle, size_t nbytes, void *userdata) {
-	const short *buffer;
+void copyAudioData(const short *buffer, size_t nbytes, void *userdata) {
 	float *evalbuf = NULL;
 	appdata_s *ad = (appdata_s *)userdata;
-	waitCount = 0;
-	if (!ad->isActive) {
-		audio_in_peek(handle, &buffer, &nbytes);
-		audio_in_drop(handle);
-		return;
-	}
 	if (nbytes > 0) {
-		audio_in_peek(handle, &buffer, &nbytes);
 		short *buffend = ((char *)buffer) + nbytes;
 		while (buffer < buffend) {
 			data[activebuf][idx++] = *buffer++;
@@ -95,41 +86,18 @@ void io_stream_callback(audio_in_h handle, size_t nbytes, void *userdata) {
 				idx = BUFFSIZE / 2;
 			}
 		}
-		audio_in_drop(handle);
-		if (evalbuf != NULL)
-			evaluate_audio(evalbuf, ad);
+		if (evalbuf != NULL) {
+			float freq = evaluate_audio(evalbuf, ad);
+			if (freq != ad->dispFreq) {
+				ecore_thread_feedback(ad->thread, &freq);
+			}
+		}
 	}
 }
 
-/*
- * @brief Rotate hands of the watch
- * @param[in] hand The hand you want to rotate
- * @param[in] degree The degree you want to rotate
- * @param[in] cx The rotation's center horizontal position
- * @param[in] cy The rotation's center vertical position
- */
-Eina_Bool deactivateAudio(void *data) {
-	appdata_s *ad = (appdata_s *)data;
-	time_t now = time(0);
-	if (now - ad->pauseTime > 28) {
-		dlog_print(DLOG_INFO, LOG_TAG, "Audio Record Stop Requested");
-		int error_code;
-		error_code = audio_in_unprepare(ad->input);
-		if (error_code) {
-			dlog_print(DLOG_ERROR, LOG_TAG, "Fehler %d bei Deactivate!", error_code);
-		}
-		error_code = audio_in_destroy(ad->input);
-		if (error_code) {
-			printError(ad, "Fehler audio_in_set_stream", error_code);
-			error_code = audio_in_destroy(ad->input);
-		}
-		dlog_print(DLOG_INFO, LOG_TAG, "Audio Record Stop Executed");
-	}
-	return EINA_FALSE;
-}
 
-void activateAudio(appdata_s *ad) {
-	waitCount = 0;
+void activateAudio(void *data, Ecore_Thread *thread) {
+	appdata_s *ad = data;
 	dlog_print(DLOG_INFO, LOG_TAG, "Audio Record Start Requested");
 	audio_io_error_e error_code;
 
@@ -139,7 +107,7 @@ void activateAudio(appdata_s *ad) {
 		printError(ad, "Fehler audio_in_create", error_code);
 		return;
 	}
-	error_code = audio_in_set_stream_cb(ad->input, io_stream_callback, ad);
+	error_code = audio_in_set_stream_cb(ad->input, copyAudioData, ad);
 	if (error_code) {
 		printError(ad, "Fehler audio_in_set_stream", error_code);
 		error_code = audio_in_destroy(ad->input);
@@ -153,6 +121,19 @@ void activateAudio(appdata_s *ad) {
 		return;
 	}
 	dlog_print(DLOG_INFO, LOG_TAG, "Audio was activated");
+	unsigned long buffbytes = BUFFSIZE * sizeof(short);
+	void *buff = malloc(buffbytes);
+
+	while (!ecore_thread_check(thread)) {
+		int read = audio_in_read(ad->input, buff, buffbytes);
+		if (read > 0) {
+			copyAudioData(buff, read, ad);
+		}
+	}
+
+	audio_in_unprepare(ad->input);
+	audio_in_destroy(ad->input);
+	free(buff);
 }
 
 void view_rotate_hand(Evas_Object *hand, double degree, Evas_Coord cx, Evas_Coord cy)
@@ -167,16 +148,8 @@ void view_rotate_hand(Evas_Object *hand, double degree, Evas_Coord cx, Evas_Coor
 	evas_map_free(m);
 }
 
-Eina_Bool displayNote(void *data) {
-	appdata_s *ad = data;
+void displayNote(appdata_s *ad, float freq) {
 //	dlog_print(DLOG_DEBUG, LOG_TAG, "Timer was triggered: NewFreq: %f, oldFreq: %f", ad->newFreq, ad->dispFreq);
-	if (ad->newFreq == ad->dispFreq) {
-		if (++waitCount > 5)  {
-			activateAudio(ad);
-		}
-		return ad->isActive;
-	}
-	float freq = ad->newFreq;
 	char hertzstr[32];
 	double deg = 0.;
 	if (freq > 27.) {
@@ -209,6 +182,24 @@ Eina_Bool displayNote(void *data) {
 	evas_object_map_set(ad->hand, rot);
 	evas_object_map_enable_set(ad->hand, EINA_TRUE);
 	ad->dispFreq = freq;
-	return ad->isActive;
+}
+
+void displayNoteCallback(void *data, Ecore_Thread *thread, void *msg_data) {
+	displayNote((appdata_s *)data, *(float *)msg_data);
+}
+
+static void thread_end_cb(void *data, Ecore_Thread *thread)
+{
+}
+
+static void thread_cancel_cb(void *data, Ecore_Thread *thread)
+{
+}
+
+Ecore_Thread *startRecordThread(appdata_s *ad) {
+	Ecore_Thread *thread = ecore_thread_feedback_run(activateAudio, displayNoteCallback,
+	   thread_end_cb, thread_cancel_cb, ad,
+	   EINA_TRUE);
+	return thread;
 }
 
