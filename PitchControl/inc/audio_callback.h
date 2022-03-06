@@ -11,8 +11,9 @@
 #include <audio_io.h>
 
 #define SAMPLE_RATE 44100
+#define MAXOCTAVE 8
 
-extern char **noteName;
+extern char **noteName, **octName;
 extern char language[3];
 
 void reset_data();

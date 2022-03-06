@@ -12,7 +12,7 @@
 #include "fourier.h"
 #define BUFFSIZE 32768
 
-char **noteName;
+char **noteName, **octName;
 
 /*
  * Berechnet die Anzahl Halbtöne, die der gesuchte Ton vom Kammerton entfernt ist und zählt vier Oktaven dazu.
@@ -20,12 +20,6 @@ char **noteName;
 static double calculateHalfTones(float freq) {
 	return 12. / M_LN2 * (log(freq) - log(440.)) + 48.5;
 }
-
-#define MAXOCTAVE 8
-
-const static char *octave[MAXOCTAVE] = {
-		"sub2", "sub1", "gr.", "kl.", "sup'", "sup''", "sup'''", "sup''''"
-};
 
 const static char *accidental[] = {
 		"", "#", "", "", "#", "", "#", "", "", "#", "", "#"
@@ -70,7 +64,7 @@ void displayNote(float freq, appdata_s *ad) {
 		evas_object_text_text_set(ad->note, noteName[noteidx]);
 		evas_object_text_text_set(ad->accidental, accidental[noteidx]);
 		if (octaveidx < MAXOCTAVE)
-			evas_object_text_text_set(ad->octave, octave[octaveidx]);
+			evas_object_text_text_set(ad->octave, octName[octaveidx]);
 		else
 			evas_object_text_text_set(ad->octave, "");
 		deg = (halftones - 0.5 - fht) * 80.;
@@ -118,7 +112,7 @@ void evaluate_audio(float *data, appdata_s *ad) {
 			maxidx = i / 2;
 		}
 	}
-	if (maxval * maxidx > 2.e10) {
+	if (maxval * maxidx > 3.e10) {
 		// Aufgrund der Werte der Nachbarpunkte und einer quadratischen Interpolation
 		// versuchen wir die Frequenz noch genauer abzuschätzen.
 		float ym = sqrt(absquad(data + maxidx - 1));

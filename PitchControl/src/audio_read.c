@@ -24,6 +24,18 @@ const static char *note[] = {
 		"A", "A", "B", "C", "C", "D", "D", "E", "F", "F", "G", "G"
 };
 
+const static char *octave[MAXOCTAVE] = {
+		"ctr,,,", "ctr,,", "ctr,", "sm.", "sup'", "sup''", "sup'''", "sup''''"
+};
+
+const static char *octave_de[MAXOCTAVE] = {
+		"ktr,,,", "ktr,,", "kontra", "kl.", "sup'", "sup''", "sup'''", "sup''''"
+};
+
+const static char *octave_lat[MAXOCTAVE] = {
+		"o-1", "o1", "o2", "o3", "o4", "o5", "o6", "o7"
+};
+
 audio_in_h input;
 char isActive = 0;
 
@@ -64,14 +76,18 @@ void activateAudioModule(appdata_s *ad) {
 	language[2] = '\0';
 	// Retrieve the current system language
 	int notesize = 140, x = 40, y = 100;
-	if (strcmp(language, "de") == 0)
+	if (strcmp(language, "de") == 0) {
 		noteName = note_de;
-	else if (strstr("fr|it|es|pt", language) != NULL) {
+		octName = octave_de;
+	} else if (strstr("fr|it|es|pt", language) != NULL) {
 		noteName = note_lat;
+		octName = octave_lat;
 		notesize = 90;
 		y = 70;
-	} else
+	} else {
 		noteName = note;
+		octName = octave;
+	}
 	evas_object_move(ad->note, ad->centerX - x, ad->centerY - y);
 	evas_object_text_font_set(ad->note, "TizenSans:style=bold", notesize);
 }
