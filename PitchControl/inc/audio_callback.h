@@ -12,6 +12,9 @@
 
 #define SAMPLE_RATE 44100
 
+extern char **noteName;
+extern char language[3];
+
 void reset_data();
 
 void io_stream_callback(audio_in_h handle, size_t nbytes, void *userdata);

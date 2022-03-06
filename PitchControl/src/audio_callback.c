@@ -12,16 +12,14 @@
 #include "fourier.h"
 #define BUFFSIZE 32768
 
+char **noteName;
+
 /*
  * Berechnet die Anzahl Halbtöne, die der gesuchte Ton vom Kammerton entfernt ist und zählt vier Oktaven dazu.
  */
 static double calculateHalfTones(float freq) {
 	return 12. / M_LN2 * (log(freq) - log(440.)) + 48.5;
 }
-
-const static char *note[] = {
-		"A", "A", "H", "C", "C", "D", "D", "E", "F", "F", "G", "G"
-};
 
 #define MAXOCTAVE 8
 
@@ -32,6 +30,8 @@ const static char *octave[MAXOCTAVE] = {
 const static char *accidental[] = {
 		"", "#", "", "", "#", "", "#", "", "", "#", "", "#"
 };
+
+char language[3];
 
 /*
  * @brief Rotate hands of the watch
@@ -52,7 +52,7 @@ void view_rotate_hand(Evas_Object *hand, double degree, Evas_Coord cx, Evas_Coor
 	evas_map_free(m);
 }
 
-float oldfreq = 0.;
+float oldfreq = -3.;
 
 void displayNote(float freq, appdata_s *ad) {
 	if (freq == oldfreq)
@@ -67,8 +67,7 @@ void displayNote(float freq, appdata_s *ad) {
 		int noteidx = fht % 12;
 		sprintf(hertzstr, "%.1f Hz", freq);
 		evas_object_text_text_set(ad->freq, hertzstr);
-		evas_object_text_text_set(ad->note, note[noteidx]);
-		evas_object_move(ad->note, ad->centerX - 45, ad->centerY - 100);
+		evas_object_text_text_set(ad->note, noteName[noteidx]);
 		evas_object_text_text_set(ad->accidental, accidental[noteidx]);
 		if (octaveidx < MAXOCTAVE)
 			evas_object_text_text_set(ad->octave, octave[octaveidx]);
@@ -76,9 +75,8 @@ void displayNote(float freq, appdata_s *ad) {
 			evas_object_text_text_set(ad->octave, "");
 		deg = (halftones - 0.5 - fht) * 40.;
 	} else {
-		evas_object_text_text_set(ad->freq, "");
-		evas_object_text_text_set(ad->note, "-");
-		evas_object_move(ad->note, ad->centerX - 32, ad->centerY - 100);
+		evas_object_text_text_set(ad->freq, "-------");
+		evas_object_text_text_set(ad->note, "");
 		evas_object_text_text_set(ad->accidental, "");
 		evas_object_text_text_set(ad->octave, "");
 	}
