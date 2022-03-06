@@ -134,7 +134,7 @@ void evaluate_audio(float *data, appdata_s *ad) {
 
 void io_stream_callback(audio_in_h handle, size_t nbytes, void *userdata) {
 	const short *buffer;
-	char eval = 0;
+	float *evalbuf = NULL;
 	if (nbytes > 0) {
 		audio_in_peek(handle, &buffer, &nbytes);
 		short *buffend = ((char *)buffer) + nbytes;
@@ -142,14 +142,14 @@ void io_stream_callback(audio_in_h handle, size_t nbytes, void *userdata) {
 			data[activebuf][idx++] = *buffer++;
 			if (idx >= BUFFSIZE)  {
 				memcpy(data[1 - activebuf], data[activebuf] + BUFFSIZE / 2, BUFFSIZE / 2 * sizeof(float));
+				evalbuf = data[activebuf];
 				activebuf = 1 - activebuf;
 				idx = BUFFSIZE / 2;
-				eval = true;
 			}
 		}
 		audio_in_drop(handle);
-		if (eval)
-			evaluate_audio(data[activebuf], (appdata_s *)userdata);
+		if (evalbuf != NULL)
+			evaluate_audio(evalbuf, (appdata_s *)userdata);
 	}
 }
 
