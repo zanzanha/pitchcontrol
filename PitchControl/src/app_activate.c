@@ -7,7 +7,6 @@
 
 #include <audio_io.h>
 #include <stdio.h>
-#include <system_settings.h>
 #include <device/power.h>
 #include <dlog.h>
 
@@ -42,10 +41,6 @@ void activateApp(appdata_s *ad) {
 	dlog_print(DLOG_INFO, LOG_TAG, "App activation Requested");
 
 	device_power_request_lock(POWER_LOCK_DISPLAY, 180000);
-	char *locale;
-	system_settings_get_value_string(SYSTEM_SETTINGS_KEY_LOCALE_LANGUAGE, &locale);
-	strncpy(language, locale, 2);
-	language[2] = '\0';
 	// Retrieve the current system language
 	int notesize = 140, x = 40, y = 100;
 	if (strcmp(language, "de") == 0) {

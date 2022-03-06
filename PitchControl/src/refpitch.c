@@ -3,6 +3,7 @@
 #include <app.h>
 #include <dlog.h>
 #include <time.h>
+#include <system_settings.h>
 
 #include "refpitch.h"
 #include "audio_callback.h"
@@ -76,12 +77,28 @@ void register_rotary_callback(appdata_s *data)
 	refRect = evas_object_rectangle_add(data->canvas);
 	evas_object_resize(refRect, data->centerX * 1.4, data->centerY * 1.0);
 	evas_object_move(refRect, 0.3 * data->centerX, 0.5 * data->centerY);
-	evas_object_color_set(refRect, 230, 230, 230, 164);
+	evas_object_color_set(refRect, 230, 230, 230, 188);
 	titleText = evas_object_text_add(data->canvas);
-	evas_object_text_font_set(titleText, "TizenSans:style=bold", 16);
+	evas_object_text_font_set(titleText, "TizenSans:style=bold", 18);
 	evas_object_color_set(titleText, 128, 0, 0, 255);
 	evas_object_move(titleText, 0.3 * data->centerX + 15, 0.5 * data->centerY + 15);
-	evas_object_text_text_set(titleText, "Reference Concert Pitch");
+	char *locale;
+	system_settings_get_value_string(SYSTEM_SETTINGS_KEY_LOCALE_LANGUAGE, &locale);
+	strncpy(language, locale, 2);
+	language[2] = '\0';
+	char *refLabel;
+	if (strcmp("de", language) == 0)
+		refLabel = "Kammertonstimmung";
+	else if (strcmp("fr", language) == 0)
+		refLabel = "Accordage du la";
+	else if (strcmp("it", language) == 0)
+		refLabel = "Accordatura del la";
+	else if (strcmp("es", language) == 0)
+		refLabel = "Afinación del diapasón";
+	else {
+		refLabel = "Standard pitch tuning";
+	}
+	evas_object_text_text_set(titleText, refLabel);
 	refText = evas_object_text_add(data->canvas);
 	evas_object_text_font_set(refText, "TizenSans:style=bold", 60);
 	evas_object_color_set(refText, 80, 20, 0, 255);
