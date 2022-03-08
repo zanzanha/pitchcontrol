@@ -26,15 +26,15 @@ const static char *note[] = {
 };
 
 const static char *octave[MAXOCTAVE] = {
-		"ctr,,", "ctr,", "gr.", "sm.", "sup'", "sup''", "sup'''", "sup''''"
+		"1", "2", "3", "4", "5", "6", "7", "8"
 };
 
 const static char *octave_de[MAXOCTAVE] = {
-		"ktr,,", "kontra", "gr.", "kl.", "sup'", "sup''", "sup'''", "sup''''"
+		"1", "2", "3", "4", "5", "6", "7", "8"
 };
 
 const static char *octave_lat[MAXOCTAVE] = {
-		"o-1", "o1", "o2", "o3", "o4", "o5", "o6", "o7"
+		"1", "2", "3", "4", "5", "6", "7", "8"
 };
 
 void activateApp(appdata_s *ad) {
